@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal Sign In - Advance Billing System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Master Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <span class="brand-icon" style="background: linear-gradient(135deg, #10b981, #059669);">ADM</span>
+                <span>Admin Governance Portal</span>
+            </a>
+            <a href="index.html" class="btn btn-sm btn-outline-dark-custom rounded-pill">
+                &larr; Back to Portal Hub
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Auth Content -->
+    <div class="container py-4">
+        <div class="auth-container">
+
+            <div class="auth-header">
+                <span class="auth-badge badge-admin">
+                    🛡️ Restricted Access • Role: Administrator
+                </span>
+                <h2 class="fw-bold text-light mt-1">Admin Portal Sign In</h2>
+                <p class="text-secondary small">
+                    Authorized system management & financial governance route.
+                </p>
+            </div>
+
+            <!-- Login Glass Card -->
+            <div class="glass-panel glass-admin p-4 admin-form">
+                
+                <!-- Login Mode Tabs -->
+                <ul class="nav nav-pills nav-pills-custom nav-justified mb-4 bg-dark-card p-1 rounded-3" id="adminAuthTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="standard-tab" data-bs-toggle="tab" data-bs-target="#standard-login" type="button" role="tab">
+                            🔑 Password Auth
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="qr-tab" data-bs-toggle="tab" data-bs-target="#qr-login" type="button" role="tab">
+                            📷 QR Pass Key
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="adminAuthTabContent">
+                    
+                    <!-- Standard Email & Password Tab -->
+                    <div class="tab-pane fade show active" id="standard-login" role="tabpanel">
+                        <form id="adminLoginForm">
+                            <div class="mb-3">
+                                <label for="adminEmail" class="form-label">Admin Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark-card border-secondary text-secondary">✉️</span>
+                                    <input type="email" class="form-control form-control-dark" id="adminEmail" placeholder="admin@billing.com" required value="admin@billing.com">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label for="adminPassword" class="form-label">Security Password</label>
+                                    <a href="#" class="small text-admin text-decoration-none" onclick="AuthManager.showToast('Demo mode: Use password admin123', 'info'); return false;">Forgot?</a>
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark-card border-secondary text-secondary">🔒</span>
+                                    <input type="password" class="form-control form-control-dark" id="adminPassword" placeholder="••••••••" required value="admin123">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="admin2FA" class="form-label d-flex align-items-center justify-content-between">
+                                    <span>2FA Authentication Code (Optional for Demo)</span>
+                                    <span class="badge bg-secondary">MFA Enabled</span>
+                                </label>
+                                <input type="text" class="form-control form-control-dark" id="admin2FA" placeholder="e.g. 774-889" maxlength="7">
+                            </div>
+
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-admin py-2.5">
+                                    Sign In to Admin Dashboard &rarr;
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- QR Pass Key Login Tab -->
+                    <div class="tab-pane fade text-center py-3" id="qr-login" role="tabpanel">
+                        <div class="fs-1 mb-2">🛡️</div>
+                        <h5 class="fw-bold text-light">QR Pass Key Authentication</h5>
+                        <p class="text-secondary small mb-4">Scan your assigned Level-5 Admin QR Card to authenticate instantly without typing password.</p>
+
+                        <button class="btn btn-admin btn-lg px-4 mb-3" onclick="QREngine.openScannerModal(handleAdminQRScan)">
+                            📷 Launch QR Camera Scanner
+                        </button>
+                        
+                        <div class="small text-muted">
+                            Demo Admin QR Token: <code class="text-admin">QR-ADMIN-SUPER-8871</code>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Demo Credentials Quick Selector -->
+                <div class="border-top border-secondary pt-3 mt-3 text-center">
+                    <div class="small text-secondary mb-2 fw-semibold">⚡ Quick Autofill Demo Accounts:</div>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-sm btn-outline-dark-custom" onclick="autofillAdmin('admin@billing.com', 'admin123')">
+                            Super Admin
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-dark-custom" onclick="autofillAdmin('manager@billing.com', 'manager123')">
+                            Store Manager
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Route Info Note -->
+            <div class="text-center mt-4 text-secondary small">
+                <span>Looking for Distributor Portal? </span>
+                <a href="distributor-login.html" class="text-distributor fw-semibold text-decoration-none">Switch to Distributor Sign In &rarr;</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- QRCode Generator CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+    <!-- Core Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/qr-engine.js"></script>
+
+    <script>
+        function autofillAdmin(email, password) {
+            document.getElementById('adminEmail').value = email;
+            document.getElementById('adminPassword').value = password;
+            AuthManager.showToast(`Autofilled demo credentials for ${email}`, 'info');
+        }
+
+        document.getElementById('adminLoginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+
+            const res = AuthManager.loginWithCredentials(email, password, 'admin');
+            if (res.success) {
+                AuthManager.showToast(`Welcome back, ${res.user.name}! Redirecting to Admin Dashboard...`, 'success');
+                setTimeout(() => {
+                    window.location.href = 'admin-dashboard.html';
+                }, 800);
+            } else {
+                AuthManager.showToast(res.message, 'error');
+            }
+        });
+
+        function handleAdminQRScan(token) {
+            const res = AuthManager.loginWithQRToken(token);
+            if (res.success && res.user.role === 'admin') {
+                AuthManager.showToast(`QR Authenticated as ${res.user.name}! Redirecting...`, 'success');
+                setTimeout(() => {
+                    window.location.href = 'admin-dashboard.html';
+                }, 800);
+            } else if (res.success && res.user.role !== 'admin') {
+                AuthManager.showToast('Scanned QR token belongs to a Distributor. Please use the Distributor Login portal.', 'error');
+            } else {
+                AuthManager.showToast(res.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard & Governance Suite - Advance Billing System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Master Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Route Guard Immediate Check Script -->
+    <script src="js/auth.js"></script>
+    <script>
+        // Synchronous check before DOM render
+        AuthManager.enforceRouteGuard('admin');
+    </script>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container-fluid px-lg-5">
+            <a class="navbar-brand" href="admin-dashboard.html">
+                <span class="brand-icon" style="background: linear-gradient(135deg, #10b981, #059669);">ADM</span>
+                <span>Admin Governance Suite</span>
+            </a>
+            
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <span class="status-pill success d-none d-md-inline-flex align-items-center gap-1">
+                    🛡️ Level-5 Security Active
+                </span>
+
+                <!-- Active Admin User Badge & Profile -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-dark-custom dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 rounded-pill" type="button" data-bs-toggle="dropdown">
+                        <img id="adminNavAvatar" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80" class="rounded-circle" width="30" height="30" alt="Avatar">
+                        <div class="text-start d-none d-sm-block" style="line-height: 1.1;">
+                            <div class="fw-bold small text-light" id="adminNavName">Swayam</div>
+                            <div class="text-muted style-tiny" style="font-size: 0.7rem;" id="adminNavRole">Super Administrator</div>
+                        </div>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg border-secondary">
+                        <li><h6 class="dropdown-header">System Clearance Level 5</h6></li>
+                        <li><a class="dropdown-header text-secondary small" href="#" onclick="QREngine.openScannerModal()">📷 Test QR Scanner</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><button class="dropdown-item text-danger" onclick="AuthManager.logout()">🚪 Log Out Admin Session</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid px-lg-5 py-4">
+
+        <!-- Page Title & Header Actions -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-light mb-1">Financial & Billing Governance</h3>
+                <p class="text-secondary small mb-0">System Analytics, QR Invoice Builder, & Distributor Credit Ledger</p>
+            </div>
+            <div class="d-flex gap-2 mt-2 mt-sm-0">
+                <button class="btn btn-sm btn-outline-dark-custom" onclick="window.print()">
+                    🖨️ Print Dashboard Report
+                </button>
+                <button class="btn btn-admin btn-sm" onclick="document.getElementById('qrInvoiceFormCard').scrollIntoView({behavior: 'smooth'})">
+                    ⚡ New QR Invoice
+                </button>
+            </div>
+        </div>
+
+        <!-- Metrics Overview Grid -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="stat-card glass-panel glass-admin">
+                    <div>
+                        <div class="stat-label">Total Monthly Revenue</div>
+                        <div class="stat-value text-admin">₹1,842,500</div>
+                        <div class="small text-success mt-1">↑ +14.2% vs last month</div>
+                    </div>
+                    <div class="stat-icon bg-dark-card text-admin">💰</div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="stat-card glass-panel glass-admin">
+                    <div>
+                        <div class="stat-label">Active Distributors</div>
+                        <div class="stat-value text-light">24 Partners</div>
+                        <div class="small text-secondary mt-1">4 pending approvals</div>
+                    </div>
+                    <div class="stat-icon bg-dark-card text-distributor">🚚</div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="stat-card glass-panel glass-admin">
+                    <div>
+                        <div class="stat-label">QR Invoices Issued</div>
+                        <div class="stat-value text-light">318 Bills</div>
+                        <div class="small text-admin mt-1">100% Verified via QR</div>
+                    </div>
+                    <div class="stat-icon bg-dark-card text-admin">📲</div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="stat-card glass-panel glass-admin">
+                    <div>
+                        <div class="stat-label">Credit Allocated</div>
+                        <div class="stat-value text-warning">₹680,000</div>
+                        <div class="small text-secondary mt-1">74% Total Limit Used</div>
+                    </div>
+                    <div class="stat-icon bg-dark-card text-warning">💳</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Workspace Row: QR Builder + Credit Control Table -->
+        <div class="row g-4 mb-4">
+
+            <!-- Interactive QR Invoice Builder Column -->
+            <div class="col-lg-6" id="qrInvoiceFormCard">
+                <div class="glass-panel p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-light m-0 d-flex align-items-center gap-2">
+                            <span>🧾</span> Dynamic QR Invoice Generator
+                        </h5>
+                        <span class="badge badge-admin">Live Generator</span>
+                    </div>
+                    <p class="text-secondary small mb-4">
+                        Generate official wholesale invoices embedded with encrypted vector QR codes for distributor stock intake.
+                    </p>
+
+                    <form id="qrInvoiceForm">
+                        <div class="mb-3">
+                            <label class="form-label">Select Target Wholesale Distributor</label>
+                            <select id="invDistributorSelect" class="form-select form-control-dark" required>
+                                <option value="DIST-8842">Apex Global Supplies (DIST-8842)</option>
+                                <option value="DIST-9021">Nexus Enterprise Logistics (DIST-9021)</option>
+                                <option value="DIST-4410">Metro Wholesale Corp (DIST-4410)</option>
+                                <option value="DIST-7712">Horizon Regional Traders (DIST-7712)</option>
+                            </select>
+                        </div>
+
+                        <!-- Itemized Billing Rows -->
+                        <div class="mb-3">
+                            <label class="form-label d-flex justify-content-between align-items-center">
+                                <span>Invoice Itemization</span>
+                                <button type="button" class="btn btn-sm btn-outline-dark-custom py-0 px-2" id="btnAddInvoiceItem">
+                                    + Add Item Row
+                                </button>
+                            </label>
+
+                            <div id="invoiceItemsList">
+                                <!-- Default Item Row 1 -->
+                                <div class="row g-2 align-items-center mb-2 invoice-item-row" id="itemRow_1">
+                                    <div class="col-md-5">
+                                        <input type="text" class="form-control form-control-dark item-desc" value="Industrial Microprocessors (Box of 50)" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" class="form-control form-control-dark item-qty" value="5" min="1" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="number" class="form-control form-control-dark item-price" value="750.00" min="0" step="0.01" required>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeInvoiceItem('1')">✕</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invoice Subtotal & Tax Calculation -->
+                        <div class="p-3 bg-dark-card rounded mb-3 border border-secondary">
+                            <div class="d-flex justify-content-between text-secondary small mb-1">
+                                <span>Subtotal Amount:</span>
+                                <span id="invSubtotalText" class="text-light fw-semibold">₹3,750.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-secondary small mb-1">
+                                <span>Estimated Tax / GST (18%):</span>
+                                <span id="invTaxText" class="text-light fw-semibold">₹675.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-light fw-bold pt-2 border-top border-secondary fs-6">
+                                <span>Grand Total Payable:</span>
+                                <span id="invTotalText" class="text-admin">₹4,425.00</span>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-admin py-2">
+                                ⚡ Generate Verified QR Invoice &rarr;
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- QR Invoice Preview & Output Box -->
+                    <div id="qrInvoiceOutputBox" class="mt-4 p-3 bg-dark-card border border-success rounded d-none text-center">
+                        <div class="badge bg-success mb-2">QR Bill Ready</div>
+                        <h6 class="fw-bold text-light" id="invResultNum">INV-2026-9042</h6>
+                        <div class="small text-secondary mb-3">Issued to: <span id="invResultDist" class="text-light">Apex Global Supplies</span> | Total: <span id="invResultTotal" class="text-admin fw-bold">₹4,425.00</span></div>
+
+                        <div class="qr-preview-box my-2">
+                            <div id="generatedInvoiceQR"></div>
+                        </div>
+
+                        <div class="mt-3 d-flex gap-2 justify-content-center">
+                            <button class="btn btn-sm btn-outline-dark-custom" onclick="window.print()">🖨️ Print Invoice</button>
+                            <button class="btn btn-sm btn-admin" onclick="AuthManager.showToast('Invoice QR downloaded to device', 'success')">💾 Download QR PNG</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Distributor Credit Ledger Column -->
+            <div class="col-lg-6">
+                <div class="glass-panel p-4 h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-light m-0 d-flex align-items-center gap-2">
+                            <span>💳</span> Distributor Credit Lines & Status
+                        </h5>
+                        <span class="badge bg-dark border border-secondary text-secondary">4 Registered</span>
+                    </div>
+                    <p class="text-secondary small mb-3">
+                        Monitor credit utilization, approve credit line expansions, and verify partner statuses.
+                    </p>
+
+                    <div class="table-responsive flex-grow-1">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Distributor / Rep</th>
+                                    <th>Credit Line</th>
+                                    <th>Utilization</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="distributorTableBody">
+                                <!-- Rendered dynamically by admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Security Audit Log Snippet -->
+                    <div class="border-top border-secondary pt-3 mt-3">
+                        <div class="fw-semibold text-light small mb-2">🛡️ System Governance Security Audit Log</div>
+                        <div class="small text-secondary">
+                            <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                                <span>Admin Swayam authenticated via Level-5 QR Pass Key</span>
+                                <span class="text-muted">2 mins ago</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                                <span>Distributor DIST-8842 scanned Invoice QR-9942 stock intake</span>
+                                <span class="text-muted">14 mins ago</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1">
+                                <span>Credit limit adjusted for Nexus Logistics (₹250,000)</span>
+                                <span class="text-muted">1 hour ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- QRCode Generator CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+    <!-- Core Scripts -->
+    <script src="js/qr-engine.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

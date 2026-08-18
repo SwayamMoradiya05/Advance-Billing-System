@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributor Portal Dashboard - Advance Billing System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Master Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Route Guard Immediate Check Script -->
+    <script src="js/auth.js"></script>
+    <script>
+        // Synchronous check before DOM render
+        AuthManager.enforceRouteGuard('distributor');
+    </script>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container-fluid px-lg-5">
+            <a class="navbar-brand" href="distributor-dashboard.html">
+                <span class="brand-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">DIS</span>
+                <span>Distributor Logistics Suite</span>
+            </a>
+            
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <button class="btn btn-sm btn-outline-dark-custom rounded-pill d-none d-sm-inline-flex" data-bs-toggle="modal" data-bs-target="#digitalBadgeModal">
+                    📱 My QR Badge Pass
+                </button>
+
+                <!-- Active Distributor User Profile -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-dark-custom dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 rounded-pill" type="button" data-bs-toggle="dropdown">
+                        <img id="distNavAvatar" src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80" class="rounded-circle" width="30" height="30" alt="Avatar">
+                        <div class="text-start d-none d-sm-block" style="line-height: 1.1;">
+                            <div class="fw-bold small text-light" id="distNavCompany">Apex Global Supplies</div>
+                            <div class="text-muted style-tiny" style="font-size: 0.7rem;" id="distNavName">David Miller</div>
+                        </div>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg border-secondary">
+                        <li><h6 class="dropdown-header">Tier-1 Registered Distributor</h6></li>
+                        <li><a class="dropdown-item text-light small" href="#" data-bs-toggle="modal" data-bs-target="#digitalBadgeModal">📱 View Digital QR ID Badge</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><button class="dropdown-item text-danger" onclick="AuthManager.logout()">🚪 Log Out Session</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Workspace Container -->
+    <div class="container-fluid px-lg-5 py-4">
+
+        <!-- Page Header & Key Callout -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-light mb-1">Wholesale Logistics & Stock Portal</h3>
+                <p class="text-secondary small mb-0">Verified QR Invoice Stock Intake & Credit Limit Ledger</p>
+            </div>
+            <div class="d-flex gap-2 mt-2 mt-sm-0">
+                <button class="btn btn-distributor btn-sm d-flex align-items-center gap-2" onclick="scanInvoiceQRForDistributor()">
+                    <span>📷</span> Scan Invoice QR Code
+                </button>
+            </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="row g-3 mb-4">
+            <!-- Credit Line Meter Card -->
+            <div class="col-md-6 col-xl-4">
+                <div class="stat-card glass-panel glass-distributor">
+                    <div class="w-100">
+                        <div class="stat-label">Credit Available</div>
+                        <div class="stat-value text-distributor" id="distCreditAvailText">₹112,450</div>
+                        <div class="d-flex justify-content-between small text-secondary mt-2 mb-1">
+                            <span>Total Line: <strong class="text-light" id="distCreditLimitText">₹150,000</strong></span>
+                            <span>Limit Utilization</span>
+                        </div>
+                        <div class="progress" style="height: 6px; background: rgba(255,255,255,0.08);">
+                            <div class="progress-bar bg-info" id="distCreditProgressBar" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="stat-card glass-panel glass-distributor">
+                    <div>
+                        <div class="stat-label">Active Orders</div>
+                        <div class="stat-value text-light">4 Shipments</div>
+                        <div class="small text-info mt-1">🚚 1 in Transit</div>
+                    </div>
+                    <div class="stat-icon bg-dark-card text-distributor">📦</div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="stat-card glass-panel glass-distributor">
+                    <div>
+                        <div class="stat-label">QR Verified Invoices</div>
+                        <div class="stat-value text-success">38 Bills</div>
+                        <div class="small text-success mt-1">✓ 100% Stock Intake Verified</div>
+                    </div>
+                    <div class="stat-icon bg-dark-card text-success">✅</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Workspace Row: Stock QR Intake + Order Ledger -->
+        <div class="row g-4 mb-4">
+
+            <!-- Stock QR Verification Hub -->
+            <div class="col-lg-5">
+                <div class="glass-panel p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-light m-0 d-flex align-items-center gap-2">
+                            <span>📱</span> Stock Intake QR Verification
+                        </h5>
+                        <span class="badge badge-distributor">Intake Scanner</span>
+                    </div>
+                    <p class="text-secondary small mb-4">
+                        Scan the embedded QR code on your delivered invoice to verify authenticity, update inventory, and log stock intake.
+                    </p>
+
+                    <div class="text-center p-4 border border-dashed border-secondary rounded bg-dark-card mb-3">
+                        <div class="fs-1 mb-2">📷</div>
+                        <h6 class="fw-bold text-light">Scan Invoice QR Code</h6>
+                        <p class="text-secondary small mb-3">Use device camera or test scanner to verify incoming shipments.</p>
+
+                        <button class="btn btn-distributor" onclick="scanInvoiceQRForDistributor()">
+                            Launch Stock QR Scanner &rarr;
+                        </button>
+                    </div>
+
+                    <!-- Scan Output & Verification Result Box -->
+                    <div id="scanVerificationResultBox" class="p-3 bg-dark-card border border-info rounded d-none">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-success">✅ INVOICE VERIFIED</span>
+                            <span class="small text-muted" id="verifyInvDate">2026-08-18</span>
+                        </div>
+                        <h6 class="fw-bold text-light mb-1" id="verifyInvNum">INV-2026-9042</h6>
+                        <div class="small text-secondary mb-2">Grand Total: <strong class="text-distributor" id="verifyInvTotal">₹4,425.00</strong></div>
+                        <div class="small text-muted border-top border-secondary pt-2">
+                            Digital Signature: <code class="text-info" id="verifyInvSig">SECURE-SIG-99A7F</code>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Purchase Order Ledger Column -->
+            <div class="col-lg-7">
+                <div class="glass-panel p-4 h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-light m-0 d-flex align-items-center gap-2">
+                            <span>📋</span> Purchase Order & Delivery Ledger
+                        </h5>
+                        <button class="btn btn-sm btn-outline-dark-custom" onclick="AuthManager.showToast('Order history refreshed', 'info')">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                    <p class="text-secondary small mb-3">
+                        Recent wholesale orders, dispatch statuses, and QR verification records.
+                    </p>
+
+                    <div class="table-responsive flex-grow-1">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Order # / Date</th>
+                                    <th>Items Summary</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>QR Verification</th>
+                                </tr>
+                            </thead>
+                            <tbody id="purchaseOrdersTableBody">
+                                <!-- Rendered dynamically by distributor.js -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Digital QR ID Badge Modal -->
+    <div class="modal fade" id="digitalBadgeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-panel border-info">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-light d-flex align-items-center gap-2">
+                        <span>📱</span> Official Digital QR Pass Badge
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <span class="auth-badge badge-distributor mb-2">Registered Wholesale Partner</span>
+                    <h5 class="fw-bold text-light mt-1" id="modalDistCompany">Apex Global Supplies</h5>
+                    <p class="text-secondary small mb-3">Present this digital badge to store managers for instant authentication.</p>
+
+                    <div class="qr-preview-box my-3">
+                        <div id="distributorDigitalQRCanvas"></div>
+                    </div>
+
+                    <div class="small text-secondary mb-3">
+                        Pass Key Token: <code class="text-distributor" id="distQrTokenText">QR-DIST-8842</code>
+                    </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-distributor" onclick="AuthManager.showToast('Digital QR Badge downloaded as PNG', 'success')">
+                            💾 Download QR Badge Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- QRCode Generator CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+    <!-- Core Scripts -->
+    <script src="js/qr-engine.js"></script>
+    <script src="js/distributor.js"></script>
+</body>
+</html>
