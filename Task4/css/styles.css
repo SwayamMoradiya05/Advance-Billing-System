@@ -1,0 +1,166 @@
+/* Advance Billing System - Master Design System */
+:root {
+    --bg-main: #0b0f19;
+    --bg-surface: #111827;
+    --bg-card: rgba(17, 24, 39, 0.8);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.2);
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --admin-primary: #10b981;
+    --admin-primary-hover: #059669;
+    --admin-accent: #34d399;
+    --admin-bg-glow: rgba(16, 185, 129, 0.12);
+    --admin-border: rgba(16, 185, 129, 0.3);
+    --distributor-primary: #06b6d4;
+    --distributor-primary-hover: #0891b2;
+    --distributor-accent: #38bdf8;
+    --distributor-bg-glow: rgba(6, 182, 212, 0.12);
+    --distributor-border: rgba(6, 182, 212, 0.3);
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --shadow-soft: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    --shadow-glow-admin: 0 0 25px rgba(16, 185, 129, 0.2);
+    --shadow-glow-dist: 0 0 25px rgba(6, 182, 212, 0.2);
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image: 
+        radial-gradient(circle at 15% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 45%);
+    background-attachment: fixed;
+}
+
+.glass-panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition);
+}
+
+.glass-panel:hover {
+    border-color: var(--border-hover);
+}
+
+.glass-admin {
+    border-top: 3px solid var(--admin-primary);
+}
+
+.navbar-custom {
+    background: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.85rem 0;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-size: 1.25rem;
+    color: var(--text-primary) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.brand-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--admin-primary), var(--distributor-primary));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.auth-container {
+    max-width: 480px;
+    margin: 3rem auto;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-header .auth-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+}
+
+.badge-admin {
+    background: var(--admin-bg-glow);
+    color: var(--admin-primary);
+    border: 1px solid var(--admin-border);
+}
+
+.form-control-dark {
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.form-control-dark:focus {
+    background: rgba(17, 24, 39, 0.95);
+    color: var(--text-primary);
+    outline: none;
+    box-shadow: none;
+    border-color: var(--admin-primary);
+}
+
+.btn-admin {
+    background: var(--admin-primary);
+    color: #042f2e;
+    font-weight: 600;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.btn-admin:hover {
+    background: var(--admin-primary-hover);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+}
+
+.btn-outline-dark-custom {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+
+.btn-outline-dark-custom:hover {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.text-admin { color: var(--admin-primary) !important; }
+.bg-dark-card { background: var(--bg-card) !important; }

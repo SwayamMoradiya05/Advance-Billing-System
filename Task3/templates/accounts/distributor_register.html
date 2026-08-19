@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributor Registration - Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .register-card {
+            background-color: #131b2e;
+            border: 1px solid #1f293d;
+            border-top: 4px solid #06b6d4;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 480px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-badge {
+            background-color: #06b6d4;
+            color: #0b0f19;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .register-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .register-subtitle {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-bottom: 1.75rem;
+        }
+
+        .error-message {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: #0b0f19;
+            border: 1px solid #1f293d;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: #ffffff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #06b6d4;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: #06b6d4;
+            color: #0b0f19;
+            border: none;
+            border-radius: 8px;
+            padding: 0.85rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: #38bdf8;
+        }
+
+        .login-prompt {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="register-card">
+        <div class="brand-header">
+            <span class="brand-badge">DIS</span>
+            <span class="brand-title">Distributor Registration</span>
+        </div>
+
+        <h1 class="register-title">Register Account</h1>
+        <p class="register-subtitle">Create your wholesale distributor profile</p>
+
+        {% if form.errors %}
+            <div class="error-message">
+                <ul style="padding-left: 1rem; margin: 0;">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'distributor_register' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_full_name">Full Name *</label>
+                {{ form.full_name }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_email">Email Address *</label>
+                {{ form.email }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_phone">Phone Number *</label>
+                {{ form.phone }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_company_name">Company Name</label>
+                {{ form.company_name }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_password">Create Password *</label>
+                {{ form.password }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_confirm_password">Confirm Password *</label>
+                {{ form.confirm_password }}
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                {{ form.agree_terms }}
+                <label for="id_agree_terms" style="margin: 0; font-size: 0.8rem; text-transform: none;">
+                    I agree to the Distributor Terms of Service
+                </label>
+            </div>
+
+            <button type="submit" class="btn-submit">Complete Registration →</button>
+
+            <div class="login-prompt">
+                <span>Already have an account?</span>
+                <a href="{% url 'distributor_login' %}" style="color: #06b6d4; text-decoration: none; font-weight: 700; margin-left: 4px;">Sign In →</a>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

@@ -10,8 +10,8 @@ const AuthManager = (function () {
         admin: [
             {
                 id: 'ADM-001',
-                email: 'admin@billing.com',
-                password: 'admin123',
+                email: 'admin@gmail.com',
+                password: 'admin@gmail.com',
                 name: 'Swayam',
                 role: 'admin',
                 designation: 'Super Administrator',

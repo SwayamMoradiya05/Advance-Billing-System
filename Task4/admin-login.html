@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal Sign In - Advance Billing System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <span class="brand-icon" style="background: linear-gradient(135deg, #10b981, #059669);">ADM</span>
+                <span>Admin Governance Portal</span>
+            </a>
+            <a href="index.html" class="btn btn-sm btn-outline-dark-custom rounded-pill">
+                &larr; Back to Portal Hub
+            </a>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="auth-container">
+
+            <div class="auth-header">
+                <span class="auth-badge badge-admin">
+                    🛡️ Restricted Access • Role: Administrator
+                </span>
+                <h2 class="fw-bold text-light mt-1">Admin Portal Sign In</h2>
+                <p class="text-secondary small">
+                    Authorized system management & financial governance route.
+                </p>
+            </div>
+
+            <div class="glass-panel glass-admin p-4 admin-form">
+                
+                <ul class="nav nav-pills nav-pills-custom nav-justified mb-4 bg-dark-card p-1 rounded-3" id="adminAuthTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="standard-tab" data-bs-toggle="tab" data-bs-target="#standard-login" type="button" role="tab">
+                            🔑 Password Auth
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="qr-tab" data-bs-toggle="tab" data-bs-target="#qr-login" type="button" role="tab">
+                            📷 QR Pass Key
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="adminAuthTabContent">
+                    
+                    <div class="tab-pane fade show active" id="standard-login" role="tabpanel">
+                        <form id="adminLoginForm">
+                            <div class="mb-3">
+                                <label for="adminEmail" class="form-label">Admin Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark-card border-secondary text-secondary">✉️</span>
+                                    <input type="email" class="form-control form-control-dark" id="adminEmail" placeholder="admin@gmail.com" required value="admin@gmail.com">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label for="adminPassword" class="form-label">Security Password</label>
+                                    <a href="forgot-password.html" class="small text-admin text-decoration-none">Forgot?</a>
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark-card border-secondary text-secondary">🔒</span>
+                                    <input type="password" class="form-control form-control-dark" id="adminPassword" placeholder="••••••••" required value="admin@gmail.com">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="admin2FA" class="form-label d-flex align-items-center justify-content-between">
+                                    <span>2FA Authentication Code (Optional)</span>
+                                    <span class="badge bg-secondary">MFA Enabled</span>
+                                </label>
+                                <input type="text" class="form-control form-control-dark" id="admin2FA" placeholder="e.g. 774-889" maxlength="7">
+                            </div>
+
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-admin py-2.5">
+                                    Sign In to Admin Dashboard &rarr;
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade text-center py-3" id="qr-login" role="tabpanel">
+                        <div class="fs-1 mb-2">🛡️</div>
+                        <h6 class="fw-bold text-light">Authenticate via QR Security Pass Key</h6>
+                        <p class="text-secondary small mb-3">Scan your administrator QR badge pass token.</p>
+                        <button class="btn btn-admin" onclick="QREngine.openScannerModal(handleAdminQRAuth)">
+                            Launch Camera QR Scanner
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/qr-engine.js"></script>
+    <script>
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPassword').value;
+            const user = AuthManager.login('admin', email, pass);
+            if (user) {
+                window.location.href = 'admin-dashboard.html';
+            } else {
+                alert('Invalid Admin credentials');
+            }
+        });
+
+        function handleAdminQRAuth(token) {
+            const user = AuthManager.authenticateQR(token);
+            if (user && user.role === 'admin') {
+                window.location.href = 'admin-dashboard.html';
+            } else {
+                alert('Invalid Admin QR Pass Token');
+            }
+        }
+    </script>
+</body>
+</html>
