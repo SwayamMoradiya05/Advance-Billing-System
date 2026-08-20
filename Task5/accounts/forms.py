@@ -60,11 +60,34 @@ class DistributorLoginForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        username = cleaned_data.get('username')
+        username_input = cleaned_data.get('username')
         password = cleaned_data.get('password')
 
-        if username and password:
-            user = authenticate(username=username, password=password)
+        if username_input and password:
+            clean_identifier = username_input.strip()
+
+            # 1. Authenticate directly by username
+            user = authenticate(username=clean_identifier, password=password)
+
+            # 2. Authenticate by Email
+            if user is None:
+                users_by_email = User.objects.filter(email__iexact=clean_identifier)
+                for u in users_by_email:
+                    authenticated_user = authenticate(username=u.username, password=password)
+                    if authenticated_user:
+                        user = authenticated_user
+                        break
+
+            # 3. Authenticate by Distributor ID (e.g. DIST-8842)
+            if user is None:
+                from .models import DistributorProfile
+                profiles = DistributorProfile.objects.filter(distributor_id__iexact=clean_identifier)
+                for p in profiles:
+                    authenticated_user = authenticate(username=p.user.username, password=password)
+                    if authenticated_user:
+                        user = authenticated_user
+                        break
+
             if user is None:
                 raise forms.ValidationError('Invalid distributor credentials.')
 
@@ -181,3 +204,75 @@ class DistributorRegistrationForm(forms.Form):
             self.add_error('confirm_password', 'Passwords do not match. Please re-enter.')
 
         return cleaned_data
+
+
+class DistributorProfileForm(forms.Form):
+    full_name = forms.CharField(
+        max_length=150,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control bg-dark text-light border-secondary',
+            'placeholder': 'Full Name',
+        }),
+        label="Full Name"
+    )
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control bg-dark text-light border-secondary',
+            'placeholder': 'Email Address',
+        }),
+        label="Email Address"
+    )
+    phone = forms.CharField(
+        max_length=20,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control bg-dark text-light border-secondary',
+            'placeholder': 'Phone Number',
+        }),
+        label="Phone Number"
+    )
+    company_name = forms.CharField(
+        max_length=255,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control bg-dark text-light border-secondary',
+            'placeholder': 'Company / Business Name',
+        }),
+        label="Company Name"
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_full_name(self):
+        full_name = self.cleaned_data.get('full_name', '').strip()
+        if len(full_name) < 2:
+            raise forms.ValidationError('Full name must be at least 2 characters long.')
+        if re.search(r'\d', full_name):
+            raise forms.ValidationError('Full name should not contain numeric digits.')
+        return full_name
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip().lower()
+        email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_regex, email):
+            raise forms.ValidationError('Please enter a valid email address format.')
+        existing_users = User.objects.filter(email__iexact=email)
+        if self.user:
+            existing_users = existing_users.exclude(pk=self.user.pk)
+        if existing_users.exists():
+            raise forms.ValidationError('An account with this email address is already registered.')
+        return email
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone', '').strip()
+        if re.search(r'[a-zA-Z]', phone):
+            raise forms.ValidationError('Phone number cannot contain alphabetic characters.')
+        digits = re.sub(r'\D', '', phone)
+        if len(digits) < 7 or len(digits) > 15:
+            raise forms.ValidationError('Please enter a valid 7 to 15 digit numerical phone number.')
+        return phone
+

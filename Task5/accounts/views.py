@@ -6,9 +6,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
-from .forms import LoginForm, DistributorLoginForm, DistributorRegistrationForm
-from .models import OTPCode
+from django.core.mail import send_mail
+from django.conf import settings
+from .forms import LoginForm, DistributorLoginForm, DistributorRegistrationForm, DistributorProfileForm
+from .models import OTPCode, DistributorProfile
 
 User = get_user_model()
 
@@ -36,7 +39,7 @@ def login_view(request):
 def distributor_login_view(request):
     """Distributor Logistics Portal Sign In View"""
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('distributor_dashboard')
 
     if request.method == 'POST':
         form = DistributorLoginForm(request.POST)
@@ -47,7 +50,7 @@ def distributor_login_view(request):
             if not form.cleaned_data.get('remember_me'):
                 request.session.set_expiry(0)
             
-            next_url = request.GET.get('next') or 'dashboard'
+            next_url = request.GET.get('next') or 'distributor_dashboard'
             return redirect(next_url)
     else:
         form = DistributorLoginForm()
@@ -73,12 +76,22 @@ def distributor_register_view(request):
             first_name = name_parts[0]
             last_name = name_parts[1] if len(name_parts) > 1 else ''
 
+            # Create User in database
             user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password,
                 first_name=first_name,
                 last_name=last_name
+            )
+
+            # Create Distributor Profile in database
+            distributor_id = f"DIST-{random.randint(1000, 9999)}"
+            profile = DistributorProfile.objects.create(
+                user=user,
+                phone=phone,
+                company_name=company_name or f"{first_name} Logistics",
+                distributor_id=distributor_id
             )
 
             messages.success(request, f"Distributor account created successfully! Welcome, {first_name}. Please sign in.")
@@ -90,6 +103,54 @@ def distributor_register_view(request):
 
     return render(request, 'accounts/distributor_register.html', {'form': form})
 
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_register_view(request):
+    """API endpoint for Distributor Registration"""
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, TypeError):
+        data = request.POST
+
+    form = DistributorRegistrationForm(data)
+    if form.is_valid():
+        full_name = form.cleaned_data['full_name']
+        email = form.cleaned_data['email']
+        phone = form.cleaned_data['phone']
+        company_name = form.cleaned_data.get('company_name', '')
+        password = form.cleaned_data['password']
+
+        username = email.split('@')[0] + f"{random.randint(100, 999)}"
+        name_parts = full_name.strip().split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name
+        )
+
+        distributor_id = f"DIST-{random.randint(1000, 9999)}"
+        profile = DistributorProfile.objects.create(
+            user=user,
+            phone=phone,
+            company_name=company_name or f"{first_name} Logistics",
+            distributor_id=distributor_id
+        )
+
+        return JsonResponse({
+            'message': f"Distributor account created successfully! Welcome, {first_name}. Please sign in.",
+            'distributor_id': distributor_id,
+            'redirect_url': '/distributor-login/'
+        }, status=201)
+    else:
+        errors = {field: [str(e) for e in err_list] for field, err_list in form.errors.items()}
+        return JsonResponse({'error': 'Validation failed', 'details': errors}, status=400)
+
+@csrf_exempt
 @require_http_methods(["POST"])
 def api_login_view(request):
     try:
@@ -125,6 +186,7 @@ def api_login_view(request):
         }
     }, status=200)
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def api_request_otp_view(request):
     try:
@@ -132,17 +194,42 @@ def api_request_otp_view(request):
     except (json.JSONDecodeError, TypeError):
         data = request.POST
 
-    email = data.get('email') or data.get('username')
-    if not email:
+    raw_input = data.get('email') or data.get('username')
+    if not raw_input:
         return JsonResponse({'error': 'Email or username is required'}, status=400)
 
-    otp = OTPCode.generate_otp(email)
+    clean_input = str(raw_input).strip()
+
+    # Resolve target recipient email from User model if username was passed
+    target_email = clean_input
+    user_obj = User.objects.filter(Q(email__iexact=clean_input) | Q(username__iexact=clean_input)).first()
+    if user_obj and user_obj.email:
+        target_email = user_obj.email
+
+    otp = OTPCode.generate_otp(target_email)
+
+    email_sent = False
+    try:
+        if '@' in target_email:
+            send_mail(
+                subject='Your OTP Code - Advance Billing System',
+                message=f'Your One-Time Password (OTP) for account reset is: {otp.code}\n\nThis code is valid for 10 minutes.',
+                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'moradiyaswayam@gmail.com'),
+                recipient_list=[target_email],
+                fail_silently=False,
+            )
+            email_sent = True
+    except Exception as e:
+        print(f"SMTP Email Error: {e}")
+
     return JsonResponse({
         'message': 'OTP generated successfully',
-        'email': email,
-        'otp': otp.code
+        'email': target_email,
+        'otp': otp.code,
+        'email_sent': email_sent
     }, status=200)
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def api_verify_otp_view(request):
     try:
@@ -176,10 +263,150 @@ def logout_view(request):
 
 @login_required
 def dashboard_view(request):
+    """Smart Dashboard Routing: Admin vs Distributor"""
+    if hasattr(request.user, 'distributor_profile') and not request.user.is_staff and not request.user.is_superuser:
+        return redirect('distributor_dashboard')
     return render(request, 'accounts/dashboard.html', {'user': request.user})
+
+@login_required
+def distributor_dashboard_view(request):
+    """Distributor Logistics Portal Dashboard View"""
+    return render(request, 'accounts/distributor_dashboard.html', {'user': request.user})
 
 def forgot_password_view(request):
     return render(request, 'accounts/forgot_password.html')
 
 def portal_hub_view(request):
     return render(request, 'accounts/portal_hub.html')
+
+@login_required
+def distributor_profile_view(request):
+    """Distributor Profile View: Displays and updates distributor details."""
+    user = request.user
+    
+    # Ensure user has a DistributorProfile (create one if missing)
+    profile, created = DistributorProfile.objects.get_or_create(
+        user=user,
+        defaults={
+            'phone': '+1 555-019-8842',
+            'company_name': f"{user.first_name or user.username} Wholesale Solutions",
+            'distributor_id': f"DIST-{random.randint(1000, 9999)}",
+        }
+    )
+
+    if request.method == 'POST':
+        form = DistributorProfileForm(request.POST, user=user)
+        if form.is_valid():
+            full_name = form.cleaned_data['full_name']
+            email = form.cleaned_data['email']
+            phone = form.cleaned_data['phone']
+            company_name = form.cleaned_data.get('company_name', '')
+
+            # Parse full name
+            name_parts = full_name.strip().split(' ', 1)
+            user.first_name = name_parts[0]
+            user.last_name = name_parts[1] if len(name_parts) > 1 else ''
+            user.email = email
+            user.save()
+
+            # Update Profile
+            profile.phone = phone
+            profile.company_name = company_name
+            profile.save()
+
+            messages.success(request, "Your Distributor Profile has been updated successfully!")
+            return redirect('distributor_profile')
+        else:
+            messages.error(request, "Please resolve the errors below to update your profile.")
+    else:
+        initial_data = {
+            'full_name': user.get_full_name() or user.username,
+            'email': user.email,
+            'phone': profile.phone,
+            'company_name': profile.company_name,
+        }
+        form = DistributorProfileForm(initial=initial_data, user=user)
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'form': form,
+    }
+    return render(request, 'accounts/distributor_profile.html', context)
+
+
+@csrf_exempt
+def api_distributor_profile_view(request):
+    """API Endpoint for fetching and updating Distributor Profile details via JSON."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    user = request.user
+    profile, _ = DistributorProfile.objects.get_or_create(
+        user=user,
+        defaults={
+            'phone': '+1 555-019-8842',
+            'company_name': f"{user.first_name or user.username} Wholesale Solutions",
+            'distributor_id': f"DIST-{random.randint(1000, 9999)}",
+        }
+    )
+
+    if request.method in ['POST', 'PUT']:
+        try:
+            data = json.loads(request.body)
+        except (json.JSONDecodeError, TypeError):
+            data = request.POST
+
+        form = DistributorProfileForm(data, user=user)
+        if form.is_valid():
+            full_name = form.cleaned_data['full_name']
+            email = form.cleaned_data['email']
+            phone = form.cleaned_data['phone']
+            company_name = form.cleaned_data.get('company_name', '')
+
+            name_parts = full_name.strip().split(' ', 1)
+            user.first_name = name_parts[0]
+            user.last_name = name_parts[1] if len(name_parts) > 1 else ''
+            user.email = email
+            user.save()
+
+            profile.phone = phone
+            profile.company_name = company_name
+            profile.save()
+
+            return JsonResponse({
+                'message': 'Distributor profile updated successfully',
+                'profile': {
+                    'username': user.username,
+                    'full_name': user.get_full_name() or user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
+                    'phone': profile.phone,
+                    'company_name': profile.company_name,
+                    'distributor_id': profile.distributor_id,
+                    'credit_limit': str(profile.credit_limit),
+                    'is_verified': profile.is_verified,
+                    'created_at': profile.created_at.strftime('%Y-%m-%d %H:%M:%S') if profile.created_at else '',
+                }
+            }, status=200)
+        else:
+            errors = {field: [str(e) for e in err_list] for field, err_list in form.errors.items()}
+            return JsonResponse({'error': 'Validation failed', 'details': errors}, status=400)
+
+    # GET Request
+    return JsonResponse({
+        'user_id': user.id,
+        'username': user.username,
+        'full_name': user.get_full_name() or user.username,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'phone': profile.phone,
+        'company_name': profile.company_name,
+        'distributor_id': profile.distributor_id,
+        'credit_limit': str(profile.credit_limit),
+        'is_verified': profile.is_verified,
+        'created_at': profile.created_at.strftime('%Y-%m-%d %H:%M:%S') if profile.created_at else '',
+    }, status=200)
+

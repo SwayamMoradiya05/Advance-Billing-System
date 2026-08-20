@@ -51,10 +51,7 @@ def distributor_register_view(request):
                 distributor_id=distributor_id
             )
 
-            messages.success(request, f"Distributor account created successfully! Welcome, {first_name}.")
-            
-            # Log in newly registered distributor
-            login(request, user)
+            messages.success(request, f"Distributor account created successfully! Welcome, {first_name}. Please sign in.")
             return redirect('distributor_login')
         else:
             messages.error(request, "Please fix the errors in the form before submitting.")

@@ -1,23 +1,40 @@
-/* Advance Billing System - Master Design System */
+/* ==========================================================================
+   Advance Billing System - Master Design System, Admin & Distributor Themes
+   ========================================================================== */
+
 :root {
+    /* Color Palette */
     --bg-main: #0b0f19;
     --bg-surface: #111827;
-    --bg-card: rgba(17, 24, 39, 0.8);
+    --bg-card: rgba(17, 24, 39, 0.82);
+    --bg-card-hover: rgba(23, 32, 51, 0.9);
     --border-color: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(255, 255, 255, 0.2);
+    --border-hover: rgba(255, 255, 255, 0.22);
+    
     --text-primary: #f9fafb;
     --text-secondary: #9ca3af;
     --text-muted: #6b7280;
+
+    /* Admin Theme Colors (Emerald Green) */
     --admin-primary: #10b981;
     --admin-primary-hover: #059669;
     --admin-accent: #34d399;
     --admin-bg-glow: rgba(16, 185, 129, 0.12);
     --admin-border: rgba(16, 185, 129, 0.3);
+
+    /* Distributor Theme Colors (Cyan Accent) */
     --distributor-primary: #06b6d4;
     --distributor-primary-hover: #0891b2;
     --distributor-accent: #38bdf8;
     --distributor-bg-glow: rgba(6, 182, 212, 0.12);
     --distributor-border: rgba(6, 182, 212, 0.3);
+
+    /* Form & Feedback Colors */
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --success-color: #10b981;
+
+    /* UI Layout & Shadows */
     --radius-sm: 8px;
     --radius-md: 14px;
     --radius-lg: 20px;
@@ -27,6 +44,7 @@
     --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Base Document Styling */
 body {
     background-color: var(--bg-main);
     color: var(--text-primary);
@@ -35,31 +53,15 @@ body {
     overflow-x: hidden;
     background-image: 
         radial-gradient(circle at 15% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
-        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 45%);
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.07) 0%, transparent 45%);
     background-attachment: fixed;
 }
 
-.glass-panel {
-    background: var(--bg-card);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-soft);
-    transition: var(--transition);
-}
-
-.glass-panel:hover {
-    border-color: var(--border-hover);
-}
-
-.glass-admin {
-    border-top: 3px solid var(--admin-primary);
-}
-
+/* Navbar Customization */
 .navbar-custom {
     background: rgba(17, 24, 39, 0.85);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border-color);
     padding: 0.85rem 0;
 }
@@ -78,23 +80,82 @@ body {
     width: 38px;
     height: 38px;
     border-radius: var(--radius-sm);
-    background: linear-gradient(135deg, var(--admin-primary), var(--distributor-primary));
+    background: linear-gradient(135deg, var(--distributor-primary), var(--distributor-primary-hover));
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     font-weight: bold;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
 }
 
+/* Glassmorphism Panels & Cards */
+.glass-panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition);
+}
+
+.glass-panel:hover {
+    border-color: var(--border-hover);
+}
+
+.glass-distributor {
+    border-top: 3px solid var(--distributor-primary);
+}
+
+.glass-admin {
+    border-top: 3px solid var(--admin-primary);
+}
+
+/* Role Selection Cards */
+.role-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.role-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-soft);
+}
+
+.role-card.admin-theme:hover {
+    border-color: var(--admin-border);
+    box-shadow: var(--shadow-glow-admin);
+}
+
+.role-card.distributor-theme:hover {
+    border-color: var(--distributor-border);
+    box-shadow: var(--shadow-glow-dist);
+}
+
+.role-icon-wrapper {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+}
+
+/* Registration Form Container */
 .auth-container {
-    max-width: 480px;
-    margin: 3rem auto;
+    max-width: 520px;
+    margin: 2rem auto;
 }
 
 .auth-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
 }
 
 .auth-header .auth-badge {
@@ -107,7 +168,13 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.badge-distributor {
+    background: var(--distributor-bg-glow);
+    color: var(--distributor-primary);
+    border: 1px solid var(--distributor-border);
 }
 
 .badge-admin {
@@ -116,37 +183,209 @@ body {
     border: 1px solid var(--admin-border);
 }
 
+/* Form Controls & Inputs */
+.form-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+}
+
 .form-control-dark {
-    background: rgba(17, 24, 39, 0.7);
+    background: rgba(11, 15, 25, 0.75);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
     padding: 0.75rem 1rem;
     border-radius: var(--radius-sm);
+    font-size: 0.95rem;
     transition: var(--transition);
 }
 
 .form-control-dark:focus {
-    background: rgba(17, 24, 39, 0.95);
+    background: rgba(11, 15, 25, 0.95);
     color: var(--text-primary);
     outline: none;
-    box-shadow: none;
-    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+    border-color: var(--distributor-primary);
 }
 
-.btn-admin {
-    background: var(--admin-primary);
-    color: #042f2e;
-    font-weight: 600;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius-sm);
+.form-control-dark::placeholder {
+    color: var(--text-muted);
+}
+
+.input-group-text {
+    background: rgba(17, 24, 39, 0.9);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    padding: 0.75rem 0.9rem;
+}
+
+.input-group:focus-within .input-group-text {
+    border-color: var(--distributor-primary);
+    color: var(--distributor-accent);
+}
+
+/* Validation Feedback & Hints */
+.input-feedback {
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+    display: none;
+}
+
+.input-feedback.is-invalid {
+    display: block;
+    color: var(--danger-color);
+}
+
+.input-feedback.is-valid {
+    display: block;
+    color: var(--success-color);
+}
+
+.form-control-dark.is-invalid {
+    border-color: var(--danger-color) !important;
+}
+
+.form-control-dark.is-valid {
+    border-color: var(--success-color) !important;
+}
+
+/* Password Toggle Button */
+.btn-password-toggle {
+    background: rgba(17, 24, 39, 0.9);
+    border: 1px solid var(--border-color);
+    border-left: none;
+    color: var(--text-secondary);
+    padding: 0.75rem 0.9rem;
+    cursor: pointer;
     transition: var(--transition);
 }
 
-.btn-admin:hover {
-    background: var(--admin-primary-hover);
+.btn-password-toggle:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Password Strength Meter */
+.strength-meter-container {
+    margin-top: 0.5rem;
+}
+
+.strength-meter-bar {
+    height: 5px;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    margin-bottom: 0.4rem;
+}
+
+.strength-meter-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 4px;
+}
+
+.strength-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.password-checklist {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    font-size: 0.78rem;
+}
+
+.password-checklist li {
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.2rem;
+}
+
+.password-checklist li.met {
+    color: var(--success-color);
+}
+
+.password-checklist li.met span.icon::before {
+    content: "✓";
+}
+
+.password-checklist li span.icon::before {
+    content: "○";
+}
+
+/* Buttons Styling */
+.btn-distributor {
+    background: linear-gradient(135deg, var(--distributor-primary), var(--distributor-primary-hover));
     color: #ffffff;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+    font-weight: 600;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    box-shadow: 0 4px 14px rgba(6, 182, 212, 0.25);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-distributor:hover {
+    background: linear-gradient(135deg, #0891b2, #0e7490);
+    color: #ffffff;
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-outline-distributor {
+    background: rgba(6, 182, 212, 0.1);
+    border: 1px solid var(--distributor-border);
+    color: var(--distributor-accent);
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-outline-distributor:hover {
+    background: var(--distributor-primary);
+    color: #ffffff;
+    border-color: var(--distributor-primary);
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-admin {
+    background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-hover));
+    color: #042f2e;
+    font-weight: 700;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-admin:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: #ffffff;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    transform: translateY(-1px);
 }
 
 .btn-outline-dark-custom {
@@ -154,6 +393,7 @@ body {
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
     transition: var(--transition);
+    text-decoration: none;
 }
 
 .btn-outline-dark-custom:hover {
@@ -162,5 +402,31 @@ body {
     background: rgba(255, 255, 255, 0.05);
 }
 
+/* Toast Notifications */
+.custom-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--distributor-primary);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.custom-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Helpers */
+.text-distributor { color: var(--distributor-primary) !important; }
 .text-admin { color: var(--admin-primary) !important; }
 .bg-dark-card { background: var(--bg-card) !important; }

@@ -1,7 +1,13 @@
+/* ==========================================================================
+   Advance Billing System - Auth & Distributor Account Session Manager
+   ========================================================================== */
+
 const AuthManager = (function () {
     const STORAGE_KEY = 'abs_user_session';
+    const DISTRIBUTORS_DB_KEY = 'abs_registered_distributors';
 
-    const DEMO_USERS = {
+    // Default Seeded Accounts
+    const INITIAL_USERS = {
         admin: [
             {
                 id: 'ADM-001',
@@ -10,64 +16,65 @@ const AuthManager = (function () {
                 name: 'Swayam',
                 role: 'admin',
                 designation: 'Super Administrator',
-                badge: 'Level 5 Clearance',
-                avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80'
-            },
-            {
-                id: 'ADM-002',
-                email: 'manager@billing.com',
-                password: 'manager123',
-                name: 'Marcus Vance',
-                role: 'admin',
-                designation: 'Store Operations Manager',
-                badge: 'Level 3 Clearance',
-                avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80'
+                badge: 'Level 5 Clearance'
             }
         ],
         distributor: [
             {
                 id: 'DIST-8842',
                 email: 'apex@distributor.com',
+                phone: '+1 555-019-8842',
                 password: 'dist123',
-                pin: '8842',
                 name: 'David Miller',
                 company: 'Apex Global Supplies',
                 role: 'distributor',
                 creditLimit: 150000,
                 creditAvailable: 112450,
-                activeOrders: 4,
-                badge: 'Tier 1 Preferred Partner',
-                avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80'
+                activeOrders: 4
             },
             {
-                id: 'DIST-9021',
-                email: 'nexus@distributor.com',
+                id: 'DIST-0004',
+                email: 'moradiyaswayam@gmail.com',
+                phone: '+1 555-019-8842',
                 password: 'dist123',
-                pin: '9021',
-                name: 'Elena Rostova',
-                company: 'Nexus Enterprise Logistics',
+                name: 'Swayam Moradiya',
+                company: 'Swayam Logistics',
                 role: 'distributor',
-                creditLimit: 250000,
-                creditAvailable: 210800,
-                activeOrders: 9,
-                badge: 'Diamond Distribution Partner',
-                avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80'
+                creditLimit: 150000,
+                creditAvailable: 150000,
+                activeOrders: 0
             }
         ]
     };
 
-    const QR_TOKENS = {
-        'QR-ADMIN-SUPER-8871': DEMO_USERS.admin[0],
-        'QR-ADMIN-MANAGER-5524': DEMO_USERS.admin[1],
-        'QR-DIST-APEX-8842': DEMO_USERS.distributor[0],
-        'QR-DIST-NEXUS-9021': DEMO_USERS.distributor[1]
-    };
+    // Load registered distributors from localStorage or initialize with defaults
+    function getRegisteredDistributors() {
+        try {
+            const data = localStorage.getItem(DISTRIBUTORS_DB_KEY);
+            if (data) {
+                return JSON.parse(data);
+            }
+        } catch (e) {
+            console.error('Error loading distributors from storage:', e);
+        }
+        localStorage.setItem(DISTRIBUTORS_DB_KEY, JSON.stringify(INITIAL_USERS.distributor));
+        return INITIAL_USERS.distributor;
+    }
+
+    function saveDistributorsList(list) {
+        try {
+            localStorage.setItem(DISTRIBUTORS_DB_KEY, JSON.stringify(list));
+        } catch (e) {
+            console.error('Error saving distributor to storage:', e);
+        }
+    }
 
     function getSession() {
         try {
             const data = localStorage.getItem(STORAGE_KEY);
             return data ? JSON.parse(data) : null;
         } catch (e) {
+            console.error('Failed to read auth session', e);
             return null;
         }
     }
@@ -96,56 +103,69 @@ const AuthManager = (function () {
             return !!getSession();
         },
 
-        enforceRouteGuard: function (allowedRole) {
-            const user = this.getUser();
-            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-
-            if (!user) {
-                const targetLogin = allowedRole === 'admin' ? 'admin-login.html' : 'distributor-login.html';
-                window.location.href = `${targetLogin}?redirect=${encodeURIComponent(currentPage)}&reason=unauthenticated`;
-                return false;
-            }
-
-            if (user.role !== allowedRole) {
-                if (user.role === 'admin') {
-                    window.location.href = 'admin-dashboard.html?reason=role_mismatch';
-                } else {
-                    window.location.href = 'distributor-dashboard.html?reason=role_mismatch';
-                }
-                return false;
-            }
-
-            return true;
+        // Check if an email is already registered
+        isEmailRegistered: function (email) {
+            const distributors = getRegisteredDistributors();
+            return distributors.some(d => d.email.toLowerCase() === email.toLowerCase().trim());
         },
 
-        login: function (role, identifier, password) {
-            const userList = DEMO_USERS[role] || [];
-            const user = userList.find(u => 
-                (u.email.toLowerCase() === identifier.toLowerCase() || u.id.toLowerCase() === identifier.toLowerCase()) && 
+        // Register a new Distributor
+        registerDistributor: function (distributorData) {
+            const distributors = getRegisteredDistributors();
+
+            if (this.isEmailRegistered(distributorData.email)) {
+                return {
+                    success: false,
+                    message: 'An account with this email address is already registered.'
+                };
+            }
+
+            // Generate unique Distributor ID
+            const newId = 'DIST-' + Math.floor(1000 + Math.random() * 9000);
+
+            const newDistributor = {
+                id: newId,
+                name: distributorData.name,
+                email: distributorData.email.trim(),
+                phone: distributorData.phone.trim(),
+                password: distributorData.password, // In production, this would be hashed on the server
+                company: distributorData.company || `${distributorData.name} Logistics`,
+                role: 'distributor',
+                creditLimit: 50000, // Default initial credit limit
+                creditAvailable: 50000,
+                activeOrders: 0,
+                createdAt: new Date().toISOString()
+            };
+
+            distributors.push(newDistributor);
+            saveDistributorsList(distributors);
+
+            return {
+                success: true,
+                user: newDistributor,
+                message: 'Distributor account created successfully! Please sign in.'
+            };
+        },
+
+        // Standard Login
+        loginWithCredentials: function (identifier, password, expectedRole = 'distributor') {
+            let userList = [];
+            if (expectedRole === 'admin') {
+                userList = INITIAL_USERS.admin;
+            } else {
+                userList = getRegisteredDistributors();
+            }
+
+            const user = userList.find(u =>
+                (u.email.toLowerCase() === identifier.toLowerCase().trim() || u.id.toLowerCase() === identifier.toLowerCase().trim()) &&
                 u.password === password
             );
 
             if (user) {
                 setSession(user);
-                return user;
-            }
-            return null;
-        },
-
-        authenticateQR: function (token) {
-            const user = QR_TOKENS[token];
-            if (user) {
-                setSession(user);
-                return user;
-            }
-            return null;
-        },
-
-        demoLogin: function (role, index = 0) {
-            const user = DEMO_USERS[role][index];
-            if (user) {
-                setSession(user);
-                window.location.href = role === 'admin' ? 'admin-dashboard.html' : 'distributor-dashboard.html';
+                return { success: true, user: user };
+            } else {
+                return { success: false, message: 'Invalid credentials. Please check your details.' };
             }
         },
 
@@ -154,6 +174,7 @@ const AuthManager = (function () {
             window.location.href = 'index.html?action=logged_out';
         },
 
+        // Custom Toast Notification System
         showToast: function (message, type = 'success') {
             let toastEl = document.getElementById('customToastNotification');
             if (!toastEl) {
@@ -163,10 +184,13 @@ const AuthManager = (function () {
                 document.body.appendChild(toastEl);
             }
 
-            toastEl.style.borderLeftColor = type === 'error' ? '#ef4444' : (type === 'warning' ? '#f59e0b' : '#10b981');
+            const borderColor = type === 'error' ? '#ef4444' : (type === 'warning' ? '#f59e0b' : '#06b6d4');
+            const icon = type === 'error' ? '⚠️' : (type === 'warning' ? '🔔' : '✅');
+
+            toastEl.style.borderLeftColor = borderColor;
             toastEl.innerHTML = `
                 <div class="d-flex align-items-center gap-3">
-                    <span class="fs-5">${type === 'error' ? '⚠️' : '✅'}</span>
+                    <span class="fs-5">${icon}</span>
                     <div>
                         <div class="fw-semibold text-light">${type.toUpperCase()}</div>
                         <div class="small text-secondary">${message}</div>
@@ -177,7 +201,7 @@ const AuthManager = (function () {
             toastEl.classList.add('show');
             setTimeout(() => {
                 toastEl.classList.remove('show');
-            }, 3500);
+            }, 4000);
         }
     };
 })();

@@ -31,6 +31,18 @@ const AuthManager = (function () {
                 creditLimit: 150000,
                 creditAvailable: 112450,
                 activeOrders: 4
+            },
+            {
+                id: 'DIST-0004',
+                email: 'moradiyaswayam@gmail.com',
+                phone: '+1 555-019-8842',
+                password: 'dist123',
+                name: 'Swayam Moradiya',
+                company: 'Swayam Logistics',
+                role: 'distributor',
+                creditLimit: 150000,
+                creditAvailable: 150000,
+                activeOrders: 0
             }
         ]
     };
@@ -128,13 +140,10 @@ const AuthManager = (function () {
             distributors.push(newDistributor);
             saveDistributorsList(distributors);
 
-            // Automatically log in the user upon registration
-            setSession(newDistributor);
-
             return {
                 success: true,
                 user: newDistributor,
-                message: 'Distributor account created successfully!'
+                message: 'Distributor account created successfully! Please sign in.'
             };
         },
 
@@ -165,7 +174,48 @@ const AuthManager = (function () {
             window.location.href = 'index.html?action=logged_out';
         },
 
+        // Update Distributor Profile
+        updateDistributorProfile: function (profileData) {
+            const session = getSession();
+            if (!session || !session.user) {
+                return { success: false, message: 'No active distributor session found.' };
+            }
+
+            const distributors = getRegisteredDistributors();
+            const index = distributors.findIndex(d => d.id === session.user.id || d.email.toLowerCase() === session.user.email.toLowerCase());
+
+            // Check email uniqueness if email is changed
+            if (profileData.email && profileData.email.toLowerCase() !== session.user.email.toLowerCase()) {
+                const isTaken = distributors.some(d => d.email.toLowerCase() === profileData.email.toLowerCase().trim() && d.id !== session.user.id);
+                if (isTaken) {
+                    return { success: false, message: 'An account with this email address is already registered.' };
+                }
+            }
+
+            const updatedUser = {
+                ...session.user,
+                name: profileData.name || session.user.name,
+                email: profileData.email ? profileData.email.trim() : session.user.email,
+                phone: profileData.phone ? profileData.phone.trim() : session.user.phone,
+                company: profileData.company || session.user.company,
+            };
+
+            if (index !== -1) {
+                distributors[index] = updatedUser;
+                saveDistributorsList(distributors);
+            }
+
+            setSession(updatedUser);
+
+            return {
+                success: true,
+                user: updatedUser,
+                message: 'Distributor Profile updated successfully!'
+            };
+        },
+
         // Custom Toast Notification System
+
         showToast: function (message, type = 'success') {
             let toastEl = document.getElementById('customToastNotification');
             if (!toastEl) {

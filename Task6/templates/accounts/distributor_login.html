@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributor Logistics Portal - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .login-card {
+            background-color: #131b2e;
+            border: 1px solid #1f293d;
+            border-top: 4px solid #06b6d4;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .brand-badge {
+            background-color: #06b6d4;
+            color: #0b0f19;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-bottom: 1.75rem;
+        }
+
+        .error-message {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background-color: rgba(6, 182, 212, 0.15);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            color: #38bdf8;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: #0b0f19;
+            border: 1px solid #1f293d;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: #ffffff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #06b6d4;
+        }
+
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: #06b6d4;
+            color: #0b0f19;
+            border: none;
+            border-radius: 8px;
+            padding: 0.85rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn-submit:hover {
+            background-color: #38bdf8;
+        }
+
+        .register-box {
+            margin-top: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid #1f293d;
+            text-align: center;
+        }
+
+        .btn-register-link {
+            display: block;
+            width: 100%;
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background-color: rgba(6, 182, 212, 0.12);
+            color: #06b6d4;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-register-link:hover {
+            background-color: #06b6d4;
+            color: #0b0f19;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="brand-header">
+            <span class="brand-badge">DIS</span>
+            <span class="brand-title">Distributor Logistics Portal</span>
+        </div>
+
+        <h1 class="login-title">Distributor Sign In</h1>
+        <p class="login-subtitle">Enter your distributor credentials to access wholesale portal</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if form.errors %}
+            <div class="error-message">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username">Distributor Email or ID</label>
+                {{ form.username }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_password">Password</label>
+                {{ form.password }}
+            </div>
+
+            <div class="form-options">
+                <label style="display: flex; align-items: center; gap: 8px;">
+                    {{ form.remember_me }} Remember Session
+                </label>
+                <a href="{% url 'forgot_password' %}" style="color: #06b6d4; text-decoration: none;">Forgot Password?</a>
+            </div>
+
+            <!-- Distributor Sign In Submit Button -->
+            <button type="submit" class="btn-submit">Authenticate →</button>
+
+            <!-- Registration Button Section placed directly AFTER Distributor Login Button -->
+            <div class="register-box">
+                <p style="font-size: 0.85rem; color: #9ca3af;">New Wholesale Distributor? Register your profile.</p>
+                <a href="{% url 'distributor_register' %}" class="btn-register-link">
+                    📝 Register New Distributor Account →
+                </a>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
