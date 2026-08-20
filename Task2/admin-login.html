@@ -154,8 +154,31 @@
 
         document.getElementById('adminLoginForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            const email = document.getElementById('adminEmail').value;
-            const password = document.getElementById('adminPassword').value;
+            const email = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value.trim();
+            const twoFactor = document.getElementById('admin2FA').value.trim();
+
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!email) {
+                AuthManager.showToast('Please enter an admin email address.', 'error');
+                return;
+            }
+            if (!emailRegex.test(email)) {
+                AuthManager.showToast('Please enter a valid email address format (e.g. admin@gmail.com).', 'error');
+                return;
+            }
+            if (!password) {
+                AuthManager.showToast('Please enter your password.', 'error');
+                return;
+            }
+            if (password.length < 6) {
+                AuthManager.showToast('Password must be at least 6 characters long.', 'error');
+                return;
+            }
+            if (twoFactor && !/^\d{3}-?\d{3}$/.test(twoFactor) && !/^\d{6}$/.test(twoFactor)) {
+                AuthManager.showToast('2FA code must be a valid 6-digit numeric code (e.g., 774-889).', 'error');
+                return;
+            }
 
             const res = AuthManager.loginWithCredentials(email, password, 'admin');
             if (res.success) {

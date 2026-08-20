@@ -137,8 +137,26 @@
 
             document.getElementById('distributorLoginForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                const id = document.getElementById('distributorId').value;
-                const pass = document.getElementById('distributorPassword').value;
+                const id = document.getElementById('distributorId').value.trim();
+                const pass = document.getElementById('distributorPassword').value.trim();
+
+                if (!id) {
+                    AuthManager.showToast('Please enter your Distributor Account Email or ID.', 'error');
+                    return;
+                }
+                if (id.length < 3) {
+                    AuthManager.showToast('Distributor Account Email / ID must be at least 3 characters long.', 'error');
+                    return;
+                }
+                if (!pass) {
+                    AuthManager.showToast('Please enter your password.', 'error');
+                    return;
+                }
+                if (pass.length < 6) {
+                    AuthManager.showToast('Password must be at least 6 characters long.', 'error');
+                    return;
+                }
+
                 const result = AuthManager.loginWithCredentials(id, pass, 'distributor');
                 
                 if (result.success) {

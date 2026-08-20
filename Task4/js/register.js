@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const val = fullNameInput.value.trim();
         if (!val) return setFieldState(fullNameInput, false, 'Full name is required.');
         if (val.length < 2) return setFieldState(fullNameInput, false, 'Name must be at least 2 characters.');
+        if (/\d/.test(val)) return setFieldState(fullNameInput, false, 'Name should not contain numbers.');
         return setFieldState(fullNameInput, true, 'Name verified.');
     }
 
@@ -62,8 +63,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function validatePhone() {
         const val = phoneInput.value.trim();
         if (!val) return setFieldState(phoneInput, false, 'Phone number is required.');
+        if (/[a-zA-Z]/.test(val)) return setFieldState(phoneInput, false, 'Phone number cannot contain alphabetic characters.');
         const digits = val.replace(/\D/g, '');
-        if (digits.length < 7 || digits.length > 15) return setFieldState(phoneInput, false, 'Enter a valid 7-15 digit phone number.');
+        if (digits.length < 7 || digits.length > 15) return setFieldState(phoneInput, false, 'Enter a valid 7-15 digit numerical phone number.');
         if (!PHONE_REGEX.test(val)) return setFieldState(phoneInput, false, 'Invalid phone number format.');
         return setFieldState(phoneInput, true, 'Phone number verified.');
     }

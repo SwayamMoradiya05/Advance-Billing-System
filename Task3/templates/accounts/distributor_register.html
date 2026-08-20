@@ -207,5 +207,15 @@
         </form>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneInput = document.getElementById('id_phone');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9+\s\-()]/g, '');
+                });
+            }
+        });
+    </script>
 </body>
 </html>

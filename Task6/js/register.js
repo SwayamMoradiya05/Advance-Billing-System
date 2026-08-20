@@ -68,6 +68,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (val.length < 2) {
             return setFieldState(fullNameInput, false, 'Name must be at least 2 characters.');
         }
+        if (/\d/.test(val)) {
+            return setFieldState(fullNameInput, false, 'Name should not contain numbers.');
+        }
         return setFieldState(fullNameInput, true, 'Name verified.');
     }
 
@@ -80,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!EMAIL_REGEX.test(val)) {
             return setFieldState(emailInput, false, 'Please enter a valid email address (e.g. name@domain.com).');
         }
-        if (AuthManager.isEmailRegistered(val)) {
+        if (AuthManager.isEmailRegistered && AuthManager.isEmailRegistered(val)) {
             return setFieldState(emailInput, false, 'This email is already registered. Try signing in.');
         }
         return setFieldState(emailInput, true, 'Email available.');
@@ -92,10 +95,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!val) {
             return setFieldState(phoneInput, false, 'Phone number is required.');
         }
+        if (/[a-zA-Z]/.test(val)) {
+            return setFieldState(phoneInput, false, 'Phone number cannot contain alphabetic characters.');
+        }
         // Extract raw digits for length check
         const digits = val.replace(/\D/g, '');
         if (digits.length < 7 || digits.length > 15) {
-            return setFieldState(phoneInput, false, 'Enter a valid 7 to 15 digit phone number.');
+            return setFieldState(phoneInput, false, 'Enter a valid 7 to 15 digit numerical phone number.');
         }
         if (!PHONE_REGEX.test(val)) {
             return setFieldState(phoneInput, false, 'Invalid phone number format.');

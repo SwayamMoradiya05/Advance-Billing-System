@@ -73,23 +73,39 @@ class DistributorRegistrationForm(forms.Form):
         error_messages={'required': 'You must accept the Terms of Service to register.'}
     )
 
+    def clean_full_name(self):
+        full_name = self.cleaned_data.get('full_name', '').strip()
+        if len(full_name) < 2:
+            raise ValidationError('Full name must be at least 2 characters long.')
+        if re.search(r'\d', full_name):
+            raise ValidationError('Full name should not contain numeric digits.')
+        return full_name
+
     def clean_email(self):
         email = self.cleaned_data.get('email', '').strip().lower()
+        email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_regex, email):
+            raise ValidationError('Please enter a valid email address format.')
         if User.objects.filter(email__iexact=email).exists():
             raise ValidationError('An account with this email address is already registered.')
         return email
 
     def clean_phone(self):
         phone = self.cleaned_data.get('phone', '').strip()
+        if re.search(r'[a-zA-Z]', phone):
+            raise ValidationError('Phone number cannot contain alphabetic characters. It must contain numerical digits only.')
         digits = re.sub(r'\D', '', phone)
         if len(digits) < 7 or len(digits) > 15:
-            raise ValidationError('Please enter a valid 7 to 15 digit phone number.')
+            raise ValidationError('Please enter a valid 7 to 15 digit numerical phone number.')
         return phone
 
     def clean_password(self):
         password = self.cleaned_data.get('password')
-        if password and len(password) < 8:
-            raise ValidationError('Password must be at least 8 characters long.')
+        if password:
+            if len(password) < 8:
+                raise ValidationError('Password must be at least 8 characters long.')
+            if not (re.search(r'[A-Za-z]', password) and re.search(r'[0-9]', password)):
+                raise ValidationError('Password must contain a mix of letters and numbers.')
         return password
 
     def clean(self):

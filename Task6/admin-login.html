@@ -115,8 +115,27 @@
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                const email = document.getElementById('adminEmail').value;
-                const pass = document.getElementById('adminPassword').value;
+                const email = document.getElementById('adminEmail').value.trim();
+                const pass = document.getElementById('adminPassword').value.trim();
+
+                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!email) {
+                    AuthManager.showToast('Please enter your admin email address.', 'error');
+                    return;
+                }
+                if (!emailRegex.test(email)) {
+                    AuthManager.showToast('Please enter a valid email address format (e.g. admin@gmail.com).', 'error');
+                    return;
+                }
+                if (!pass) {
+                    AuthManager.showToast('Please enter your password.', 'error');
+                    return;
+                }
+                if (pass.length < 6) {
+                    AuthManager.showToast('Password must be at least 6 characters long.', 'error');
+                    return;
+                }
+
                 const result = AuthManager.loginWithCredentials(email, pass, 'admin');
                 
                 if (result.success) {
