@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ customer.name }} - Customer Profile | Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+        .navbar {
+            background-color: #111827;
+            border-bottom: 1px solid #1f293d;
+            padding: 0.85rem 2rem;
+        }
+        .brand-badge {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 5px;
+        }
+        .card-custom {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .btn-custom-green {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 600;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+        .btn-custom-green:hover {
+            background-color: #059669;
+            color: #ffffff;
+        }
+        .btn-outline-custom {
+            background-color: transparent;
+            color: #9ca3af;
+            border: 1px solid #374151;
+            padding: 6px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .btn-outline-custom:hover {
+            color: #ffffff;
+            border-color: #6b7280;
+            background-color: #1f293d;
+        }
+        .stat-card {
+            background-color: #131b2e;
+            border: 1px solid #1f293d;
+            border-radius: 10px;
+            padding: 1.2rem;
+        }
+        .stat-val {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 4px;
+        }
+        .stat-lbl {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+        }
+        .detail-label {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+        .detail-value {
+            font-size: 1rem;
+            color: #f3f4f6;
+            font-weight: 500;
+            margin-bottom: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center text-white font-weight-bold" href="{% url 'dashboard' %}">
+                <span class="brand-badge me-2">ABS</span> Advance Billing System
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'customer_list' %}" class="btn-outline-custom">← Customer Directory</a>
+                <a href="{% url 'customer_update' customer.pk %}" class="btn-custom-green">Edit Profile</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container px-4 mt-4">
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show bg-dark text-light border-secondary" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Header Profile Banner -->
+        <div class="card-custom d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-secondary font-monospace">{{ customer.customer_code }}</span>
+                    {% if customer.is_active %}
+                        <span class="badge bg-success bg-opacity-25 text-success border border-success px-2 py-1 rounded-pill small">Active Account</span>
+                    {% else %}
+                        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger px-2 py-1 rounded-pill small">Inactive Account</span>
+                    {% endif %}
+                </div>
+                <h2 class="fw-bold mb-0 text-white">{{ customer.name }}</h2>
+                {% if customer.company_name %}
+                    <p class="text-muted mb-0 font-weight-normal">{{ customer.company_name }}</p>
+                {% endif %}
+            </div>
+
+            <div class="d-flex gap-2">
+                <a href="{% url 'customer_toggle_status' customer.pk %}" class="btn btn-outline-warning btn-sm">
+                    {% if customer.is_active %}Deactivate{% else %}Activate{% endif %} Account
+                </a>
+                <a href="{% url 'customer_delete' customer.pk %}" class="btn btn-outline-danger btn-sm">Delete</a>
+            </div>
+        </div>
+
+        <!-- Financial Summary Grid -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-lbl">Credit Limit</div>
+                    <div class="stat-val">${{ customer.credit_limit|floatformat:2 }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-lbl">Outstanding Balance</div>
+                    <div class="stat-val text-warning">${{ customer.outstanding_balance|floatformat:2 }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-lbl">Available Credit</div>
+                    <div class="stat-val text-success">${{ customer.available_credit|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card-custom h-100">
+                    <h5 class="fw-bold text-white mb-4 border-bottom border-secondary pb-2">Contact & Identity</h5>
+                    
+                    <div class="detail-label">Full Name</div>
+                    <div class="detail-value">{{ customer.name }}</div>
+
+                    <div class="detail-label">Email Address</div>
+                    <div class="detail-value">{{ customer.email }}</div>
+
+                    <div class="detail-label">Phone Number</div>
+                    <div class="detail-value">{{ customer.phone }}</div>
+
+                    <div class="detail-label">Company / Business Name</div>
+                    <div class="detail-value">{{ customer.company_name|default:"Not specified" }}</div>
+
+                    <div class="detail-label">Tax ID / GSTIN</div>
+                    <div class="detail-value">{{ customer.tax_id|default:"Not registered" }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card-custom h-100">
+                    <h5 class="fw-bold text-white mb-4 border-bottom border-secondary pb-2">Location & Account Meta</h5>
+
+                    <div class="detail-label">Full Address</div>
+                    <div class="detail-value">{{ customer.full_address }}</div>
+
+                    <div class="detail-label">City / State</div>
+                    <div class="detail-value">{{ customer.city }}{% if customer.state %}, {{ customer.state }}{% endif %}</div>
+
+                    <div class="detail-label">Postal Code / Country</div>
+                    <div class="detail-value">{{ customer.postal_code|default:"-" }} / {{ customer.country }}</div>
+
+                    <div class="detail-label">Account Created</div>
+                    <div class="detail-value">{{ customer.created_at|date:"F d, Y - H:i" }}</div>
+
+                    <div class="detail-label">Notes</div>
+                    <div class="detail-value text-muted">{{ customer.notes|default:"No notes recorded." }}</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

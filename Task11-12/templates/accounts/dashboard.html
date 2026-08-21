@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADM Admin Governance Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+
+        /* Top Navigation Bar */
+        .navbar {
+            background-color: #111827;
+            border-bottom: 1px solid #1f293d;
+            padding: 0.85rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-badge {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 3px 8px;
+            border-radius: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .security-badge {
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot-green {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .user-profile {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #131b2e;
+            border: 1px solid #1f293d;
+            padding: 4px 12px 4px 6px;
+            border-radius: 30px;
+            transition: border-color 0.2s;
+        }
+
+        .profile-btn:hover {
+            border-color: #374151;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #3b82f6;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .user-info {
+            text-align: left;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .user-role {
+            font-size: 0.7rem;
+            color: #9ca3af;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 115%;
+            right: 0;
+            width: 220px;
+            background-color: #131b2e;
+            border: 1px solid #1f293d;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 200;
+        }
+
+        .dropdown-menu.active {
+            display: flex;
+        }
+
+        .dropdown-header {
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            color: #6b7280;
+            border-bottom: 1px solid #1f293d;
+            margin-bottom: 4px;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            color: #d1d5db;
+            text-decoration: none;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #1f293d;
+            color: #ffffff;
+        }
+
+        .dropdown-item.danger {
+            color: #f87171;
+        }
+
+        .dropdown-item.danger:hover {
+            background-color: rgba(239, 68, 68, 0.15);
+        }
+
+        /* Container & Layout */
+        .main-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 2rem 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+
+        .btn-secondary {
+            background-color: #131b2e;
+            border: 1px solid #1f293d;
+            color: #d1d5db;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #1f293d;
+            color: #ffffff;
+        }
+
+        /* Top Metric Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .metric-label {
+            font-size: 0.725rem;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .metric-value.highlight-green {
+            color: #10b981;
+        }
+
+        .metric-sub {
+            font-size: 0.775rem;
+            margin-top: 6px;
+            color: #9ca3af;
+        }
+
+        .metric-sub.green {
+            color: #34d399;
+        }
+
+        .metric-icon {
+            font-size: 1.5rem;
+            background-color: #131b2e;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #1f293d;
+        }
+
+        /* Workspace Grid (2 Columns) */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .pill-badge {
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            font-size: 0.725rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .pill-badge.subtle {
+            background-color: #131b2e;
+            border-color: #1f293d;
+            color: #9ca3af;
+        }
+
+        .card-description {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-bottom: 1.25rem;
+        }
+
+        /* Form Controls */
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-select, .form-input {
+            width: 100%;
+            background-color: #0b0f19;
+            border: 1px solid #1f293d;
+            border-radius: 8px;
+            padding: 0.65rem 0.85rem;
+            color: #ffffff;
+            font-size: 0.875rem;
+            outline: none;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-select:focus, .form-input:focus {
+            border-color: #10b981;
+        }
+
+        .item-row-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 40px;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btn-add-item {
+            background-color: transparent;
+            border: 1px dashed #1f293d;
+            color: #9ca3af;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-add-item:hover {
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .btn-remove {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            height: 38px;
+        }
+
+        .btn-remove:hover {
+            background-color: rgba(239, 68, 68, 0.25);
+        }
+
+        /* Summary Box */
+        .summary-box {
+            background-color: #0b0f19;
+            border: 1px solid #1f293d;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.25rem 0;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-bottom: 6px;
+        }
+
+        .summary-line.total {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #ffffff;
+            border-top: 1px solid #1f293d;
+            padding-top: 8px;
+            margin-bottom: 0;
+        }
+
+        .summary-line.total .total-amount {
+            color: #10b981;
+            font-size: 1.15rem;
+        }
+
+        .btn-generate {
+            width: 100%;
+            background-color: #10b981;
+            color: #0b0f19;
+            border: none;
+            border-radius: 8px;
+            padding: 0.85rem;
+            font-size: 0.95rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-generate:hover {
+            background-color: #34d399;
+        }
+
+        /* Table Styling */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.825rem;
+        }
+
+        .custom-table th {
+            padding: 10px 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #1f293d;
+        }
+
+        .custom-table td {
+            padding: 12px 12px;
+            border-bottom: 1px solid #192236;
+            vertical-align: middle;
+        }
+
+        .distributor-name {
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .distributor-meta {
+            font-size: 0.725rem;
+            color: #9ca3af;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.725rem;
+            font-weight: 700;
+        }
+
+        .status-pill.active {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+
+        .status-pill.review {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .btn-action {
+            background-color: transparent;
+            border: 1px solid #1f293d;
+            color: #9ca3af;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-action:hover {
+            border-color: #374151;
+            color: #ffffff;
+        }
+
+        /* Footer Audit Bar */
+        .footer-bar {
+            max-width: 1440px;
+            margin: 1.5rem auto 0;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            .navbar {
+                padding: 0.85rem 1rem;
+            }
+            .main-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-badge">ADM</span>
+            <span class="brand-name">Admin Governance Suite</span>
+            <a href="{% url 'customer_list' %}" style="margin-left: 20px; background-color: #10b981; color: #0b0f19; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">👥 Customers Directory</a>
+            <a href="{% url 'customer_create' %}" style="background-color: #131b2e; color: #34d399; border: 1px solid #10b981; text-decoration: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">➕ Add Customer</a>
+        </div>
+
+        <div class="nav-right">
+            <div class="security-badge">
+                <span class="dot-green"></span> Level 5 Security Active
+            </div>
+
+            <div class="user-profile" onclick="toggleDropdown()">
+                <div class="profile-btn">
+                    <div class="avatar">
+                        {{ user.first_name|default:user.username|slice:":1"|upper }}
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">{{ user.first_name|default:"Admin" }}</div>
+                        <div class="user-role">Super Administrator</div>
+                    </div>
+                </div>
+
+                <div class="dropdown-menu" id="userDropdown">
+                    <div class="dropdown-header">System Clearance Level 5</div>
+                    <a href="{% url 'customer_list' %}" class="dropdown-item">👥 Manage Customers</a>
+                    <a href="{% url 'customer_create' %}" class="dropdown-item">➕ Add New Customer</a>
+                    <a href="#" class="dropdown-item" onclick="alert('QR Scanner active.'); return false;">📱 Test QR Scanner</a>
+                    <a href="{% url 'logout' %}" class="dropdown-item danger">🚪 Log Out Admin Session</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <!-- Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Financial & Billing Governance</h1>
+                <p class="page-subtitle">System Analytics, QR Invoice Builder, & Distributor Credit Ledger</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'customer_list' %}" class="btn-secondary" style="text-decoration: none; color: #10b981; border-color: #10b981;">👥 Manage Customers</a>
+                <button class="btn-secondary" onclick="window.print()">
+                    🖨️ Print Dashboard Report
+                </button>
+            </div>
+        </div>
+
+        <!-- 4 Top Metric Cards (Values converted to INR ₹) -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div>
+                    <div class="metric-label">TOTAL MONTHLY REVENUE</div>
+                    <div class="metric-value highlight-green">₹1,842,500</div>
+                    <div class="metric-sub green">↑ +14.2% vs last month</div>
+                </div>
+                <div class="metric-icon">💰</div>
+            </div>
+
+            <div class="metric-card">
+                <div>
+                    <div class="metric-label">ACTIVE DISTRIBUTORS</div>
+                    <div class="metric-value">24 Partners</div>
+                    <div class="metric-sub">4 pending approvals</div>
+                </div>
+                <div class="metric-icon">🚚</div>
+            </div>
+
+            <div class="metric-card">
+                <div>
+                    <div class="metric-label">QR INVOICES ISSUED</div>
+                    <div class="metric-value">318 Bills</div>
+                    <div class="metric-sub green">100% Verified via QR</div>
+                </div>
+                <div class="metric-icon">📲</div>
+            </div>
+
+            <div class="metric-card">
+                <div>
+                    <div class="metric-label">CREDIT ALLOCATED</div>
+                    <div class="metric-value">₹680,000</div>
+                    <div class="metric-sub">74% Total Limit Used</div>
+                </div>
+                <div class="metric-icon">💳</div>
+            </div>
+        </div>
+
+        <!-- Main 2-Column Grid -->
+        <div class="workspace-grid">
+            
+            <!-- Left Card: Dynamic QR Invoice Generator -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span>📄</span>
+                        <h2 class="card-title">Dynamic QR Invoice Generator</h2>
+                    </div>
+                    <span class="pill-badge">Live Generator</span>
+                </div>
+                <p class="card-description">Generate official wholesale invoices embedded with encrypted vector QR codes for distributor stock intake.</p>
+
+                <label class="form-label">Select Target Wholesale Distributor</label>
+                <select class="form-select">
+                    <option selected>Apex Global Supplies (DIST-8842)</option>
+                    <option>Nexus Enterprise Logistics (DIST-5021)</option>
+                    <option>Metro Wholesale Corp (DIST-4418)</option>
+                    <option>Horizon Regional Traders (DIST-7712)</option>
+                </select>
+
+                <div class="item-row-header">
+                    <label class="form-label" style="margin-bottom:0;">Invoice Itemization</label>
+                    <button class="btn-add-item" onclick="addItemRow()">+ Add Item Row</button>
+                </div>
+
+                <div id="itemsContainer" style="margin-top: 8px;">
+                    <div class="items-grid">
+                        <input type="text" class="form-input item-desc" value="Industrial Microprocessors (Box of 50)" style="margin-bottom:0;">
+                        <input type="number" class="form-input item-qty" value="5" min="1" oninput="calculateTotals()" style="margin-bottom:0;">
+                        <input type="number" class="form-input item-price" value="750.00" step="0.01" oninput="calculateTotals()" style="margin-bottom:0;">
+                        <button class="btn-remove" onclick="removeRow(this)">✕</button>
+                    </div>
+                </div>
+
+                <div class="summary-box">
+                    <div class="summary-line">
+                        <span>Subtotal Amount:</span>
+                        <span id="subtotalVal">₹3750.00</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Estimated Tax / GST (18%):</span>
+                        <span id="taxVal">₹675.00</span>
+                    </div>
+                    <div class="summary-line total">
+                        <span>Grand Total Payable:</span>
+                        <span class="total-amount" id="grandTotalVal">₹4425.00</span>
+                    </div>
+                </div>
+
+                <button class="btn-generate" onclick="generateInvoice()">⚡ Generate Verified QR Invoice →</button>
+            </div>
+
+            <!-- Right Card: Distributor Credit Lines & Status -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span>💳</span>
+                        <h2 class="card-title">Distributor Credit Lines & Status</h2>
+                    </div>
+                    <span class="pill-badge subtle">4 Registered</span>
+                </div>
+                <p class="card-description">Monitor credit utilization, approve credit line expansions, and verify partner statuses.</p>
+
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Distributor / Rep</th>
+                                <th>Credit Line</th>
+                                <th>Utilization</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="distributor-name">Apex Global Supplies</div>
+                                    <div class="distributor-meta">ID: <span style="color:#f43f5e;">DIST-8842</span> • Rep: David Miller</div>
+                                </td>
+                                <td style="font-weight:700;">₹150,000</td>
+                                <td>
+                                    <div style="font-weight:600;">₹37,550 <span style="color:#9ca3af; font-weight:400;">(25%)</span></div>
+                                    <div style="color:#34d399; font-size:0.725rem;">₹112,450 avail</div>
+                                </td>
+                                <td><span class="status-pill active">Active</span></td>
+                                <td><button class="btn-action" onclick="alert('Adjusting credit limit for Apex Global')">Adjust Credit</button></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="distributor-name">Nexus Enterprise Logistics</div>
+                                    <div class="distributor-meta">ID: <span style="color:#f43f5e;">DIST-5021</span> • Rep: Elena Rostova</div>
+                                </td>
+                                <td style="font-weight:700;">₹250,000</td>
+                                <td>
+                                    <div style="font-weight:600;">₹39,200 <span style="color:#9ca3af; font-weight:400;">(16%)</span></div>
+                                    <div style="color:#34d399; font-size:0.725rem;">₹210,800 avail</div>
+                                </td>
+                                <td><span class="status-pill active">Active</span></td>
+                                <td><button class="btn-action" onclick="alert('Adjusting credit limit for Nexus Enterprise')">Adjust Credit</button></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="distributor-name">Metro Wholesale Corp</div>
+                                    <div class="distributor-meta">ID: <span style="color:#f43f5e;">DIST-4418</span> • Rep: Robert Chen</div>
+                                </td>
+                                <td style="font-weight:700;">₹100,000</td>
+                                <td>
+                                    <div style="font-weight:600;">₹89,400 <span style="color:#9ca3af; font-weight:400;">(89%)</span></div>
+                                    <div style="color:#34d399; font-size:0.725rem;">₹10,600 avail</div>
+                                </td>
+                                <td><span class="status-pill review">Review Required</span></td>
+                                <td><button class="btn-action" onclick="alert('Adjusting credit limit for Metro Wholesale')">Adjust Credit</button></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="distributor-name">Horizon Regional Traders</div>
+                                    <div class="distributor-meta">ID: <span style="color:#f43f5e;">DIST-7712</span> • Rep: Amara Patel</div>
+                                </td>
+                                <td style="font-weight:700;">₹180,000</td>
+                                <td>
+                                    <div style="font-weight:600;">₹12,000 <span style="color:#9ca3af; font-weight:400;">(7%)</span></div>
+                                    <div style="color:#34d399; font-size:0.725rem;">₹168,000 avail</div>
+                                </td>
+                                <td><span class="status-pill active">Active</span></td>
+                                <td><button class="btn-action" onclick="alert('Adjusting credit limit for Horizon Regional')">Adjust Credit</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Security Audit Log Footer -->
+    <div class="footer-bar">
+        <span>🛡️</span>
+        <span>System Governance Security Audit Log</span>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            const menu = document.getElementById('userDropdown');
+            menu.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const profile = document.querySelector('.user-profile');
+            const menu = document.getElementById('userDropdown');
+            if (profile && !profile.contains(e.target)) {
+                menu.classList.remove('active');
+            }
+        });
+
+        function calculateTotals() {
+            let subtotal = 0;
+            const rows = document.querySelectorAll('.items-grid');
+            rows.forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                subtotal += qty * price;
+            });
+            const tax = subtotal * 0.18;
+            const grandTotal = subtotal + tax;
+
+            document.getElementById('subtotalVal').innerText = '₹' + subtotal.toFixed(2);
+            document.getElementById('taxVal').innerText = '₹' + tax.toFixed(2);
+            document.getElementById('grandTotalVal').innerText = '₹' + grandTotal.toFixed(2);
+        }
+
+        function addItemRow() {
+            const container = document.getElementById('itemsContainer');
+            const newRow = document.createElement('div');
+            newRow.className = 'items-grid';
+            newRow.innerHTML = `
+                <input type="text" class="form-input item-desc" placeholder="Item description" style="margin-bottom:0;">
+                <input type="number" class="form-input item-qty" value="1" min="1" oninput="calculateTotals()" style="margin-bottom:0;">
+                <input type="number" class="form-input item-price" value="100.00" step="0.01" oninput="calculateTotals()" style="margin-bottom:0;">
+                <button class="btn-remove" onclick="removeRow(this)">✕</button>
+            `;
+            container.appendChild(newRow);
+            calculateTotals();
+        }
+
+        function removeRow(btn) {
+            const container = document.getElementById('itemsContainer');
+            if (container.querySelectorAll('.items-grid').length > 1) {
+                btn.closest('.items-grid').remove();
+                calculateTotals();
+            } else {
+                alert('At least one item is required on the invoice.');
+            }
+        }
+
+        function generateInvoice() {
+            const total = document.getElementById('grandTotalVal').innerText;
+            alert('Verified QR Invoice generated successfully for ' + total + '!');
+        }
+    </script>
+</body>
+</html>
