@@ -176,6 +176,29 @@ class CustomerViewsTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Customer.objects.filter(email='newweb@customer.com').exists())
 
+    def test_customer_update_view_get(self):
+        response = self.client.get(reverse('customer_update', kwargs={'pk': self.customer1.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Edit Customer: Alpha Corp")
+        self.assertContains(response, "alpha@corp.com")
+
+    def test_customer_update_view_post(self):
+        post_data = {
+            'name': 'Alpha Corp Updated',
+            'email': 'alpha.updated@corp.com',
+            'phone': '5551234567',
+            'address': '789 Market Street',
+            'country': 'India',
+            'credit_limit': '60000.00',
+            'outstanding_balance': '500.00',
+            'is_active': True,
+        }
+        response = self.client.post(reverse('customer_update', kwargs={'pk': self.customer1.pk}), post_data)
+        self.assertEqual(response.status_code, 302)
+        self.customer1.refresh_from_db()
+        self.assertEqual(self.customer1.name, 'Alpha Corp Updated')
+        self.assertEqual(self.customer1.email, 'alpha.updated@corp.com')
+        self.assertEqual(self.customer1.credit_limit, Decimal('60000.00'))
 
 
 class CustomerApiTest(TestCase):
@@ -218,3 +241,24 @@ class CustomerApiTest(TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEqual(data['customer']['email'], 'api@client.com')
+
+    def test_api_customer_update_put(self):
+        payload = {
+            'name': 'API Client Updated',
+            'email': 'api.updated@client.com',
+            'phone': '1234567890',
+            'address': '1 Enterprise Way Updated',
+            'credit_limit': '35000.00'
+        }
+        response = self.client.put(
+            reverse('api_customer_detail', kwargs={'pk': self.customer.pk}),
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data['status'], 'success')
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.name, 'API Client Updated')
+        self.assertEqual(self.customer.email, 'api.updated@client.com')
+
