@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advance Billing System - Portal Hub</title>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Master Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <span class="brand-icon">ABS</span>
+                <span>Advance Billing System</span>
+            </a>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <a href="distributor-login.html" class="btn btn-sm btn-outline-dark-custom rounded-pill">Distributor Sign In</a>
+                <a href="distributor-register.html" class="btn btn-sm btn-distributor rounded-pill">Register Distributor</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="py-5 text-center position-relative">
+        <div class="container py-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <span class="badge badge-distributor mb-3">📦 Enterprise Billing & Wholesale Logistics</span>
+                    <h1 class="display-4 fw-bold mb-3 text-light">
+                        Advance Billing System <span class="text-distributor">Portal Hub</span>
+                    </h1>
+                    <p class="lead text-secondary mb-4 mx-auto" style="max-width: 720px;">
+                        Enterprise billing platform featuring role-separated authentication portals for Admins and Wholesale Distributors. Register your distributor profile with real-time validation and wholesale credit access.
+                    </p>
+                    
+                    <!-- Main Portal Access Buttons -->
+                    <div class="d-flex flex-wrap justify-content-center gap-3 align-items-center">
+                        <a href="admin-login.html" class="btn btn-admin btn-lg d-inline-flex align-items-center gap-2">
+                            <span>🛡️</span> Admin Portal Login
+                        </a>
+                        <a href="distributor-login.html" class="btn btn-distributor btn-lg d-inline-flex align-items-center gap-2">
+                            <span>📦</span> Distributor Portal Login
+                        </a>
+                        <!-- Registration Button placed right AFTER Distributor Portal Login Button -->
+                        <a href="distributor-register.html" class="btn btn-outline-distributor btn-lg d-inline-flex align-items-center gap-2">
+                            <span>📝</span> Register New Distributor
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Role Selection Portal Cards -->
+    <section class="py-4">
+        <div class="container">
+            <div class="row g-4">
+                
+                <!-- Admin Role Card -->
+                <div class="col-md-6">
+                    <div class="role-card admin-theme">
+                        <div class="role-icon-wrapper">
+                            🛡️
+                        </div>
+                        <span class="auth-badge badge-admin align-self-start">MANAGEMENT & GOVERNANCE</span>
+                        <h3 class="fw-bold text-light mt-2">Admin Portal</h3>
+                        <p class="text-secondary small mb-4">
+                            Central governance hub for store managers, financial auditors, and system administrators.
+                        </p>
+                        
+                        <ul class="list-unstyled text-secondary small mb-4 flex-grow-1">
+                            <li class="mb-2 d-flex align-items-center gap-2">
+                                <span class="text-admin">✓</span> Dynamic QR Invoice Builder & Print Engine
+                            </li>
+                            <li class="mb-2 d-flex align-items-center gap-2">
+                                <span class="text-admin">✓</span> Distributor Credit Allocation & Approval
+                            </li>
+                            <li class="mb-2 d-flex align-items-center gap-2">
+                                <span class="text-admin">✓</span> Real-Time Revenue Analytics & Audit Logs
+                            </li>
+                        </ul>
+
+                        <div class="d-grid gap-2">
+                            <a href="admin-login.html" class="btn btn-admin">Go to Admin Login Page &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Distributor Role Card -->
+                <div class="col-md-6">
+                    <div class="role-card distributor-theme">
+                        <div class="role-icon-wrapper">
+                            📦
+                        </div>
+                        <span class="auth-badge badge-distributor align-self-start">WHOLESALE & LOGISTICS</span>
+                        <h3 class="fw-bold text-light mt-2">Distributor Portal</h3>
+                        <p class="text-secondary small mb-4">
+                            Dedicated workspace for regional wholesale distributors, logistics partners, and stockists.
+                        </p>
+                        
+                        <ul class="list-unstyled text-secondary small mb-4 flex-grow-1">
+                            <li class="mb-2 d-flex align-items-center gap-2">
+                                <span class="text-distributor">✓</span> Instant Invoice QR Code Scanner for Stock Intake
+                            </li>
+                            <li class="mb-2 d-flex align-items-center gap-2">
+                                <span class="text-distributor">✓</span> Active Credit Limit & Utilization Tracker
+                            </li>
+                            <li class="mb-2 d-flex align-items-center gap-2">
+                                <span class="text-distributor">✓</span> Quick Self-Service Registration & Profile Setup
+                            </li>
+                        </ul>
+
+                        <div class="d-grid gap-2">
+                            <!-- Distributor Login Button -->
+                            <a href="distributor-login.html" class="btn btn-distributor">
+                                🔑 Go to Distributor Login Page &rarr;
+                            </a>
+                            <!-- Registration Button placed right AFTER Distributor Login Button -->
+                            <a href="distributor-register.html" class="btn btn-outline-distributor">
+                                📝 Register New Distributor Account &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-4 border-top border-secondary mt-5">
+        <div class="container text-center text-secondary small">
+            <p class="mb-1">Advance Billing System &copy; 2026. All rights reserved.</p>
+            <p class="mb-0 text-muted">Role-Separated Admin & Distributor Portal</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
