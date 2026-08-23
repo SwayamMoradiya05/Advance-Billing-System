@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advance Billing System - Portal Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            max-width: 720px;
+            margin-bottom: 3rem;
+        }
+
+        .badge {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 1rem;
+        }
+
+        .title span {
+            color: #10b981;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #9ca3af;
+            line-height: 1.6;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .card {
+            background-color: #131b2e;
+            border: 1px solid #1f293d;
+            border-radius: 14px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #374151;
+        }
+
+        .card-admin {
+            border-top: 4px solid #10b981;
+        }
+
+        .card-distributor {
+            border-top: 4px solid #06b6d4;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .tag-admin { color: #10b981; }
+        .tag-distributor { color: #06b6d4; }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-desc {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 2rem;
+            flex-grow: 1;
+        }
+
+        .features-list li {
+            font-size: 0.85rem;
+            color: #d1d5db;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            display: block;
+            text-align: center;
+            padding: 0.85rem;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn-admin {
+            background-color: #10b981;
+            color: #0b0f19;
+        }
+        .btn-admin:hover {
+            background-color: #34d399;
+        }
+
+        .btn-distributor {
+            background-color: #06b6d4;
+            color: #0b0f19;
+        }
+        .btn-distributor:hover {
+            background-color: #38bdf8;
+        }
+
+        .btn-outline-distributor {
+            background-color: rgba(6, 182, 212, 0.12);
+            color: #06b6d4;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+        .btn-outline-distributor:hover {
+            background-color: #06b6d4;
+            color: #0b0f19;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <span class="badge">⚡ Advance Billing System</span>
+        <h1 class="title">Enterprise <span>Portal Hub</span></h1>
+        <p class="subtitle">
+            Role-separated authentication portals for System Administrators and Wholesale Distributors. Select your portal to proceed.
+        </p>
+    </div>
+
+    <div class="cards-grid">
+        
+        <!-- Admin Portal Card -->
+        <div class="card card-admin">
+            <div class="card-icon">🛡️</div>
+            <div class="card-tag tag-admin">MANAGEMENT & GOVERNANCE</div>
+            <h2 class="card-title">Admin Portal</h2>
+            <p class="card-desc">Central governance hub for store managers, auditors, and system administrators.</p>
+
+            <ul class="features-list">
+                <li><span style="color:#10b981;">✓</span> Dynamic QR Invoice Generation</li>
+                <li><span style="color:#10b981;">✓</span> Distributor Credit Allocation</li>
+                <li><span style="color:#10b981;">✓</span> Real-Time Revenue Analytics</li>
+            </ul>
+
+            <a href="{% url 'login' %}" class="btn btn-admin" style="margin-bottom: 0.75rem;">Admin Portal Login →</a>
+            <a href="{% url 'product_list' %}" class="btn" style="background-color: #3b82f6; color: #ffffff;">📦 Product Catalog & Stock →</a>
+        </div>
+
+        <!-- Distributor Portal Card -->
+        <div class="card card-distributor">
+            <div class="card-icon">📦</div>
+            <div class="card-tag tag-distributor">WHOLESALE & LOGISTICS</div>
+            <h2 class="card-title">Distributor Portal</h2>
+            <p class="card-desc">Dedicated workspace for wholesale distributors and stockists.</p>
+
+            <ul class="features-list">
+                <li><span style="color:#06b6d4;">✓</span> Invoice QR Code Stock Intake</li>
+                <li><span style="color:#06b6d4;">✓</span> Credit Limit & Ledger Tracker</li>
+                <li><span style="color:#06b6d4;">✓</span> Purchase Order History</li>
+            </ul>
+
+            <!-- Distributor Portal Login Button -->
+            <a href="{% url 'distributor_login' %}" class="btn btn-distributor" style="margin-bottom: 0.75rem;">
+                Distributor Portal Login →
+            </a>
+            <!-- Registration Button placed right AFTER Distributor Portal Login Button -->
+            <a href="{% url 'distributor_register' %}" class="btn btn-outline-distributor">
+                📝 Register New Distributor →
+            </a>
+        </div>
+
+    </div>
+
+</body>
+</html>
