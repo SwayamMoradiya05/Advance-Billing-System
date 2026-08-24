@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - {{ product.name }} | Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+        .navbar {
+            background-color: #111827;
+            border-bottom: 1px solid #1f293d;
+            padding: 0.85rem 2rem;
+        }
+        .brand-badge {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 5px;
+        }
+        .card-custom {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .btn-custom-green {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 700;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-custom-green:hover {
+            background-color: #059669;
+            color: #ffffff;
+        }
+        .btn-outline-custom {
+            background-color: transparent;
+            color: #9ca3af;
+            border: 1px solid #374151;
+            padding: 7px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-outline-custom:hover {
+            color: #ffffff;
+            border-color: #6b7280;
+            background-color: #1f293d;
+        }
+        .btn-outline-danger-custom {
+            background-color: transparent;
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 7px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-outline-danger-custom:hover {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #ffffff;
+        }
+        .detail-label {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .badge-in-stock {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-low-stock {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-out-of-stock {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .tax-card {
+            background-color: #131b2e;
+            border: 1px solid #1f293d;
+            border-radius: 10px;
+            padding: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center text-white font-weight-bold" href="{% url 'dashboard' %}">
+                <span class="brand-badge me-2">ABS</span> Advance Billing System
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'dashboard' %}" class="btn-outline-custom">📊 Admin Dashboard</a>
+                <a href="{% url 'product_list' %}" class="btn-outline-custom">📦 Product Catalog</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container px-4 mt-4" style="max-width: 1000px;">
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show bg-dark text-light border-secondary mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Breadcrumb & Navigation -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% url 'product_list' %}" class="btn-outline-custom">&laquo; Back to Product Catalog</a>
+            <div class="d-flex gap-2">
+                <a href="{% url 'product_toggle_status' product.pk %}" class="btn-outline-custom">
+                    {% if product.is_active %}⛔ Deactivate{% else %}✅ Activate{% endif %}
+                </a>
+                <a href="{% url 'product_edit' product.pk %}" class="btn-outline-custom">✏️ Edit Product</a>
+                <a href="{% url 'product_delete' product.pk %}" class="btn-outline-danger-custom">🗑️ Delete Product</a>
+            </div>
+        </div>
+
+        <!-- Product Header Card -->
+        <div class="card-custom">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <span class="badge bg-secondary font-monospace mb-2">{{ product.sku }}</span>
+                    <h2 class="fw-bold text-white mb-1">{{ product.name }}</h2>
+                    <p class="text-secondary mb-0">Category: <strong class="text-light">{{ product.get_category_display }}</strong></p>
+                </div>
+                <div class="text-end">
+                    {% if product.stock <= 0 %}
+                        <span class="badge-out-of-stock fs-6">Out of Stock</span>
+                    {% elif product.is_low_stock %}
+                        <span class="badge-low-stock fs-6">Low Stock Alert</span>
+                    {% else %}
+                        <span class="badge-in-stock fs-6">In Stock</span>
+                    {% endif %}
+                    <div class="mt-2">
+                        {% if product.is_active %}
+                            <span class="badge bg-success" style="font-size: 0.75rem;">Active Status</span>
+                        {% else %}
+                            <span class="badge bg-danger" style="font-size: 0.75rem;">Inactive Status</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Product Info Grid -->
+        <div class="row g-4 mb-4">
+
+            <!-- Pricing & GST Breakdown -->
+            <div class="col-12 col-md-6">
+                <div class="card-custom h-100">
+                    <h5 class="fw-bold text-white mb-3 border-bottom border-secondary pb-2">💰 Pricing & GST Calculation</h5>
+                    <div class="tax-card mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-secondary">Base Unit Price (Excl. GST):</span>
+                            <span class="fw-bold text-white font-monospace fs-5">₹{{ product.price|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-secondary">GST Rate Percentage:</span>
+                            <span class="badge bg-primary fs-6">{{ product.gst_rate }}% GST</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-secondary">GST Tax Amount per Unit:</span>
+                            <span class="text-info fw-bold font-monospace">+ ₹{{ product.gst_amount|floatformat:2 }}</span>
+                        </div>
+                        <hr class="border-secondary">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-white">Final Selling Price (Incl. GST):</span>
+                            <span class="fw-bold text-emerald font-monospace fs-4" style="color: #34d399;">₹{{ product.price_with_gst|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    {% if product.hsn_code %}
+                        <div class="d-flex justify-content-between align-items-center text-secondary small">
+                            <span>HSN Tariff Code:</span>
+                            <strong class="text-light font-monospace">{{ product.hsn_code }}</strong>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Inventory & Stock Valuation -->
+            <div class="col-12 col-md-6">
+                <div class="card-custom h-100">
+                    <h5 class="fw-bold text-white mb-3 border-bottom border-secondary pb-2">📦 Inventory & Stock Status</h5>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <div class="detail-label">Current Stock</div>
+                            <div class="detail-value text-white fs-3 font-monospace">{{ product.stock }} <small class="text-muted fs-6">{{ product.unit }}</small></div>
+                        </div>
+                        <div class="col-6">
+                            <div class="detail-label">Reorder Threshold</div>
+                            <div class="detail-value text-warning fs-3 font-monospace">{{ product.min_stock_level }} <small class="text-muted fs-6">{{ product.unit }}</small></div>
+                        </div>
+                    </div>
+                    <div class="tax-card">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-secondary">Total Stock Value (Excl. GST):</span>
+                            <span class="fw-bold text-white font-monospace">₹{{ product.total_stock_value|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-secondary">Total Stock Value (Incl. GST):</span>
+                            <span class="fw-bold text-emerald font-monospace" style="color: #34d399;">₹{{ product.total_stock_value_with_gst|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description & Metadata -->
+        <div class="card-custom">
+            <h5 class="fw-bold text-white mb-3 border-bottom border-secondary pb-2">📝 Description & Audit Trail</h5>
+            <div class="mb-4">
+                <div class="detail-label mb-1">Product Description</div>
+                <div class="p-3 bg-dark rounded border border-secondary text-light">
+                    {% if product.description %}
+                        {{ product.description|linebreaks }}
+                    {% else %}
+                        <em class="text-muted">No detailed description provided for this product.</em>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row g-3 text-secondary small">
+                <div class="col-md-4">
+                    <div class="detail-label">Date Created</div>
+                    <div class="text-light">{{ product.created_at|date:"F d, Y H:i" }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-label">Last Updated</div>
+                    <div class="text-light">{{ product.updated_at|date:"F d, Y H:i" }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-label">REST API Endpoint</div>
+                    <div class="text-light">
+                        <a href="{% url 'api_product_detail' product.pk %}" target="_blank" class="text-info">/products/api/products/{{ product.pk }}/</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

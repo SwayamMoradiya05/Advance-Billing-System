@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Invoice | Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            padding-bottom: 4rem;
+        }
+        .card-custom {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .form-control, .form-select {
+            background-color: #1f293d;
+            border: 1px solid #374151;
+            color: #ffffff;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #1f293d;
+            color: #ffffff;
+            border-color: #10b981;
+            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary btn-sm">← Back to Invoices</a>
+            <h4 class="fw-bold text-white mb-0">Create Customer Invoice</h4>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="card-custom">
+                <h5 class="fw-bold text-emerald mb-3" style="color: #10b981;">1. Header & Billing Information</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Customer *</label>
+                        {{ form.customer }}
+                        {{ form.customer.errors }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Invoice Date *</label>
+                        {{ form.invoice_date }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Due Date</label>
+                        {{ form.due_date }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Status</label>
+                        {{ form.status }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Payment Method</label>
+                        {{ form.payment_method }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Payment Terms</label>
+                        {{ form.payment_terms }}
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-3" style="color: #10b981;">2. Invoice Line Items</h5>
+                {{ formset.management_form }}
+                <div class="table-responsive mb-4">
+                    <table class="table table-dark align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%;">Product</th>
+                                <th style="width: 12%;">Qty</th>
+                                <th style="width: 18%;">Unit Price (₹)</th>
+                                <th style="width: 15%;">GST Rate (%)</th>
+                                <th style="width: 20%;">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item_form in formset %}
+                            <tr>
+                                <td>
+                                    {{ item_form.id }}
+                                    {{ item_form.product }}
+                                    {{ item_form.product.errors }}
+                                </td>
+                                <td>{{ item_form.quantity }}</td>
+                                <td>{{ item_form.unit_price }}</td>
+                                <td>{{ item_form.gst_rate }}</td>
+                                <td>{{ item_form.description }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <h5 class="fw-bold mb-3" style="color: #10b981;">3. Financial Adjustments & Notes</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Overall Discount (₹)</label>
+                        {{ form.discount_amount }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Amount Collected / Paid (₹)</label>
+                        {{ form.amount_paid }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Notes</label>
+                        {{ form.notes }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Terms & Conditions</label>
+                        {{ form.terms_and_conditions }}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3">
+                    <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    <button type="submit" class="btn btn-success px-5 fw-bold" style="background-color: #10b981;">Save Invoice</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

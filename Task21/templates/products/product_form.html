@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+        .navbar {
+            background-color: #111827;
+            border-bottom: 1px solid #1f293d;
+            padding: 0.85rem 2rem;
+        }
+        .brand-badge {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 5px;
+        }
+        .card-custom {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .btn-custom-green {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 700;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-custom-green:hover {
+            background-color: #059669;
+            color: #ffffff;
+        }
+        .btn-outline-custom {
+            background-color: transparent;
+            color: #9ca3af;
+            border: 1px solid #374151;
+            padding: 9px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-outline-custom:hover {
+            color: #ffffff;
+            border-color: #6b7280;
+            background-color: #1f293d;
+        }
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #d1d5db;
+            margin-bottom: 6px;
+        }
+        .form-text {
+            color: #9ca3af !important;
+            font-size: 0.75rem;
+        }
+        .section-header {
+            color: #10b981;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #1f293d;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center text-white font-weight-bold" href="{% url 'dashboard' %}">
+                <span class="brand-badge me-2">ABS</span> Advance Billing System
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'dashboard' %}" class="btn-outline-custom py-1">📊 Dashboard</a>
+                <a href="{% url 'product_list' %}" class="btn-outline-custom py-1">📦 Product Catalog</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container px-4 mt-4" style="max-width: 900px;">
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show bg-dark text-light border-secondary mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form Card Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-white mb-1">{{ title }}</h3>
+                <p class="text-secondary small mb-0">Fill in product details, pricing, inventory stock, and GST tax rate.</p>
+            </div>
+            <a href="{% url 'product_list' %}" class="btn-outline-custom">&laquo; Cancel</a>
+        </div>
+
+        <div class="card-custom">
+            <form method="POST" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger bg-dark text-danger border-danger mb-4">
+                        {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Section 1: Basic Information -->
+                <div class="section-header">1. Basic Product Information</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-4">
+                        <label for="{{ form.sku.id_for_label }}" class="form-label">Product SKU Code</label>
+                        {{ form.sku }}
+                        {% if form.sku.errors %}
+                            <div class="text-danger small mt-1">{{ form.sku.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Leave empty to auto-generate (e.g. PRD-1042).</div>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Product Name / Title <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                            <div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.hsn_code.id_for_label }}" class="form-label">HSN Tariff Code</label>
+                        {{ form.hsn_code }}
+                        {% if form.hsn_code.errors %}
+                            <div class="text-danger small mt-1">{{ form.hsn_code.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Harmonized System Nomenclature for GST invoicing.</div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Pricing & Tax -->
+                <div class="section-header">2. Pricing & GST Tax Slabs</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.price.id_for_label }}" class="form-label">Base Unit Price (₹ Excl. GST) <span class="text-danger">*</span></label>
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                            <div class="text-danger small mt-1">{{ form.price.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="{{ form.gst_rate.id_for_label }}" class="form-label">GST Tax Rate Slab</label>
+                        {{ form.gst_rate }}
+                        {% if form.gst_rate.errors %}
+                            <div class="text-danger small mt-1">{{ form.gst_rate.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Section 3: Inventory & Stock Controls -->
+                <div class="section-header">3. Inventory & Stock Controls</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-4">
+                        <label for="{{ form.stock.id_for_label }}" class="form-label">Initial Stock Quantity <span class="text-danger">*</span></label>
+                        {{ form.stock }}
+                        {% if form.stock.errors %}
+                            <div class="text-danger small mt-1">{{ form.stock.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="{{ form.unit.id_for_label }}" class="form-label">Unit of Measurement</label>
+                        {{ form.unit }}
+                        {% if form.unit.errors %}
+                            <div class="text-danger small mt-1">{{ form.unit.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label for="{{ form.min_stock_level.id_for_label }}" class="form-label">Reorder Level Threshold</label>
+                        {{ form.min_stock_level }}
+                        {% if form.min_stock_level.errors %}
+                            <div class="text-danger small mt-1">{{ form.min_stock_level.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Triggers low stock alert when inventory reaches this level.</div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Description & Status -->
+                <div class="section-header">4. Specifications & Catalog Status</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Product Description</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch mt-2">
+                            {{ form.is_active }}
+                            <label class="form-check-label text-white ms-2" for="{{ form.is_active.id_for_label }}">
+                                Active Product (available for billing & active catalog)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Action Buttons -->
+                <div class="d-flex justify-content-end gap-3 pt-3 border-top border-secondary">
+                    <a href="{% url 'product_list' %}" class="btn-outline-custom">Cancel</a>
+                    <button type="submit" class="btn-custom-green">💾 {{ button_text }}</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
