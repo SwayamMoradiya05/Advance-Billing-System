@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Invoice | Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #111827;
+            --border-color: #1f293d;
+            --input-bg: #1f293d;
+            --primary-accent: #10b981;
+            --text-primary: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            padding-bottom: 5rem;
+        }
+
+        .card-custom {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        .form-control, .form-select {
+            background-color: var(--input-bg);
+            border: 1px solid #374151;
+            color: #ffffff;
+            font-size: 0.925rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--input-bg);
+            color: #ffffff;
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.2);
+        }
+
+        .form-control::placeholder {
+            color: #6b7280;
+        }
+
+        .section-header {
+            color: var(--primary-accent);
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .customer-info-card {
+            background-color: #1a2336;
+            border: 1px solid #2b384e;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            display: none;
+        }
+
+        .badge-role {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--primary-accent);
+            border: 1px solid var(--primary-accent);
+            font-weight: 600;
+            padding: 0.35em 0.75em;
+        }
+
+        .financial-summary-card {
+            background-color: #172033;
+            border: 1px solid #233047;
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+
+        .grand-total-banner {
+            background-color: #059669;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            font-weight: 700;
+        }
+
+        .stock-badge {
+            font-size: 0.75rem;
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
+        }
+
+        .table-dark th {
+            background-color: #172033;
+            border-color: var(--border-color);
+            color: #d1d5db;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .table-dark td {
+            border-color: var(--border-color);
+            vertical-align: middle;
+        }
+
+        .btn-remove-row {
+            color: #ef4444;
+            background: transparent;
+            border: 1px solid #ef4444;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-remove-row:hover {
+            background-color: #ef4444;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-4">
+        <!-- Top Navigation Bar -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                ← Back to Invoices
+            </a>
+            <div class="text-end">
+                <span class="badge badge-role rounded-pill mb-1">
+                    👤 {{ user_role }}
+                </span>
+                <span class="text-muted small d-block">Operator Console (Admin & Distributor)</span>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between">
+            <h3 class="fw-bold text-white mb-0">Create Commercial Invoice</h3>
+            <p class="text-muted mb-0 small">Dynamic Database Billing & Line Item Calculations</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger mt-3 mb-0">
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" id="invoiceForm" novalidate>
+            {% csrf_token %}
+            <div class="card-custom">
+
+                <!-- SECTION 1: HEADER & CUSTOMER DETAILS -->
+                <div class="section-header">1. Customer & Invoice Header</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-light">Select Customer *</label>
+                        {{ form.customer }}
+                        {% if form.customer.errors %}
+                            <div class="text-danger small mt-1">{{ form.customer.errors.0 }}</div>
+                        {% endif %}
+
+                        <!-- Dynamic Customer Details Card -->
+                        <div id="customer-info-card" class="customer-info-card mt-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 id="cust-name-display" class="fw-bold text-white mb-0">---</h6>
+                                    <small id="cust-company-display" class="text-emerald" style="color:#10b981;">---</small>
+                                </div>
+                                <span id="cust-tax-display" class="badge bg-secondary">GSTIN: N/A</span>
+                            </div>
+                            <div class="row g-2 text-muted small">
+                                <div class="col-6"><strong>Phone:</strong> <span id="cust-phone-display">---</span></div>
+                                <div class="col-6"><strong>Email:</strong> <span id="cust-email-display">---</span></div>
+                                <div class="col-12"><strong>Address:</strong> <span id="cust-address-display">---</span></div>
+                                <div class="col-6"><strong>Credit Limit:</strong> <span id="cust-credit-display" class="text-light">₹0.00</span></div>
+                                <div class="col-6"><strong>Outstanding:</strong> <span id="cust-outstanding-display" class="text-warning">₹0.00</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-light">Invoice Date *</label>
+                                {{ form.invoice_date }}
+                                {% if form.invoice_date.errors %}
+                                    <div class="text-danger small mt-1">{{ form.invoice_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-light">Payment Due Date</label>
+                                {{ form.due_date }}
+                                {% if form.due_date.errors %}
+                                    <div class="text-danger small mt-1">{{ form.due_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold text-light">Status</label>
+                                {{ form.status }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold text-light">Payment Method</label>
+                                {{ form.payment_method }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold text-light">Payment Terms</label>
+                                {{ form.payment_terms }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: DYNAMIC INVOICE LINE ITEMS TABLE -->
+                <div class="d-flex justify-content-between align-items-center section-header">
+                    <span>2. Invoice Line Items</span>
+                    <button type="button" id="add-item-btn" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                        + Add Product Line Item
+                    </button>
+                </div>
+
+                {{ formset.management_form }}
+
+                {% if formset.non_form_errors %}
+                    <div class="alert alert-danger mb-3">
+                        {% for error in formset.non_form_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-dark align-middle" id="items-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;">Product Item *</th>
+                                <th style="width: 10%;">Qty *</th>
+                                <th style="width: 13%;">Unit Price (₹)</th>
+                                <th style="width: 11%;">GST Rate (%)</th>
+                                <th style="width: 10%;">Disc (%)</th>
+                                <th style="width: 13%;">Line Total (₹)</th>
+                                <th style="width: 8%; text-align: center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-table-body">
+                            {% for item_form in formset %}
+                            <tr class="item-row" data-row-index="{{ forloop.counter0 }}">
+                                <td>
+                                    {{ item_form.id }}
+                                    {{ item_form.product }}
+                                    {% if item_form.product.errors %}
+                                        <div class="text-danger small mt-1">{{ item_form.product.errors.0 }}</div>
+                                    {% endif %}
+                                    <div class="mt-1">
+                                        {{ item_form.description }}
+                                    </div>
+                                    <div class="stock-warning-box text-warning small mt-1" style="display:none;"></div>
+                                </td>
+                                <td>
+                                    {{ item_form.quantity }}
+                                    {% if item_form.quantity.errors %}
+                                        <div class="text-danger small mt-1">{{ item_form.quantity.errors.0 }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ item_form.unit_price }}
+                                    {% if item_form.unit_price.errors %}
+                                        <div class="text-danger small mt-1">{{ item_form.unit_price.errors.0 }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ item_form.gst_rate }}
+                                    {% if item_form.gst_rate.errors %}
+                                        <div class="text-danger small mt-1">{{ item_form.gst_rate.errors.0 }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ item_form.discount_percentage }}
+                                    {% if item_form.discount_percentage.errors %}
+                                        <div class="text-danger small mt-1">{{ item_form.discount_percentage.errors.0 }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control line-total-display fw-bold text-emerald" style="color:#10b981;" value="₹0.00" readonly>
+                                </td>
+                                <td class="text-center">
+                                    {% if formset.can_delete %}
+                                        <div style="display:none;">{{ item_form.DELETE }}</div>
+                                    {% endif %}
+                                    <button type="button" class="btn-remove-row" title="Remove line item">✕</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SECTION 3: FINANCIAL ADJUSTMENTS & SUMMARY -->
+                <div class="section-header">3. Financial Adjustments & Calculation Summary</div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-light">Overall Bill Discount (₹)</label>
+                                {{ form.discount_amount }}
+                                {% if form.discount_amount.errors %}
+                                    <div class="text-danger small mt-1">{{ form.discount_amount.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-light">Amount Collected / Paid (₹)</label>
+                                {{ form.amount_paid }}
+                                {% if form.amount_paid.errors %}
+                                    <div class="text-danger small mt-1">{{ form.amount_paid.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold text-light">Internal Notes & Remarks</label>
+                                {{ form.notes }}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold text-light">Terms & Conditions</label>
+                                {{ form.terms_and_conditions }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="financial-summary-card">
+                            <h6 class="fw-bold text-white mb-3 border-bottom pb-2" style="border-color:#2b384e !important;">Live Invoice Summary</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Line Subtotal (Excl. Tax):</span>
+                                <span id="summary-subtotal" class="fw-semibold text-light">₹0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Total Calculated GST Tax:</span>
+                                <span id="summary-tax" class="fw-semibold text-info">₹0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Overall Bill Discount:</span>
+                                <span id="summary-discount" class="fw-semibold text-warning">- ₹0.00</span>
+                            </div>
+                            <hr style="border-color: #2b384e;">
+                            <div class="grand-total-banner d-flex justify-content-between align-items-center mb-3">
+                                <span>Grand Total Payable:</span>
+                                <span id="summary-grand-total" class="fs-5">₹0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Amount Received / Paid:</span>
+                                <span id="summary-amount-paid" class="fw-semibold text-success">₹0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted fw-bold">Balance Due:</span>
+                                <span id="summary-balance-due" class="fw-bold text-danger">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUBMIT / CANCEL BUTTONS -->
+                <div class="d-flex justify-content-end gap-3 pt-3 border-top" style="border-color: var(--border-color) !important;">
+                    <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary px-4 rounded-pill">Cancel</a>
+                    <button type="submit" class="btn btn-success px-5 fw-bold rounded-pill" style="background-color: #10b981;">
+                        💾 Save & Issue Invoice
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <!-- Hidden Template Row for Dynamic JS Addition -->
+    <template id="empty-row-template">
+        <tr class="item-row" data-row-index="__prefix__">
+            <td>
+                <input type="hidden" name="items-__prefix__-id" id="id_items-__prefix__-id">
+                <select name="items-__prefix__-product" class="form-select product-select" id="id_items-__prefix__-product">
+                    <!-- Cloned from first select options -->
+                </select>
+                <div class="mt-1">
+                    <input type="text" name="items-__prefix__-description" class="form-control line-desc-input" placeholder="Line item specifics or serial nos" id="id_items-__prefix__-description">
+                </div>
+                <div class="stock-warning-box text-warning small mt-1" style="display:none;"></div>
+            </td>
+            <td>
+                <input type="number" name="items-__prefix__-quantity" value="1" min="1" class="form-control quantity-input" id="id_items-__prefix__-quantity">
+            </td>
+            <td>
+                <input type="number" name="items-__prefix__-unit_price" step="0.01" placeholder="0.00" class="form-control unit-price-input" id="id_items-__prefix__-unit_price">
+            </td>
+            <td>
+                <input type="number" name="items-__prefix__-gst_rate" step="0.01" placeholder="18.00" class="form-control gst-input" id="id_items-__prefix__-gst_rate">
+            </td>
+            <td>
+                <input type="number" name="items-__prefix__-discount_percentage" step="0.01" min="0" max="100" placeholder="0.00" class="form-control discount-input" id="id_items-__prefix__-discount_percentage">
+            </td>
+            <td>
+                <input type="text" class="form-control line-total-display fw-bold text-emerald" style="color:#10b981;" value="₹0.00" readonly>
+            </td>
+            <td class="text-center">
+                <div style="display:none;">
+                    <input type="checkbox" name="items-__prefix__-DELETE" id="id_items-__prefix__-DELETE">
+                </div>
+                <button type="button" class="btn-remove-row" title="Remove line item">✕</button>
+            </td>
+        </tr>
+    </template>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const customerSelect = document.querySelector('.customer-select');
+            const customerCard = document.getElementById('customer-info-card');
+            const itemsTableBody = document.getElementById('items-table-body');
+            const addItemBtn = document.getElementById('add-item-btn');
+            const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
+            const emptyTemplate = document.getElementById('empty-row-template');
+
+            const discountTotalInput = document.querySelector('.discount-total-input');
+            const amountPaidInput = document.querySelector('.amount-paid-input');
+
+            // -----------------------------------------------------------------
+            // 1. DYNAMIC CUSTOMER SELECTION LISTENER
+            // -----------------------------------------------------------------
+            function updateCustomerCard() {
+                if (!customerSelect) return;
+                const selectedOption = customerSelect.options[customerSelect.selectedIndex];
+                if (!selectedOption || !selectedOption.value) {
+                    customerCard.style.display = 'none';
+                    return;
+                }
+
+                // Extract data attributes from option tag
+                const phone = selectedOption.getAttribute('data-phone') || 'N/A';
+                const email = selectedOption.getAttribute('data-email') || 'N/A';
+                const address = selectedOption.getAttribute('data-address') || 'N/A';
+                const creditLimit = selectedOption.getAttribute('data-credit-limit') || '0.00';
+                const outstanding = selectedOption.getAttribute('data-outstanding') || '0.00';
+                const taxId = selectedOption.getAttribute('data-tax-id') || 'N/A';
+                const company = selectedOption.getAttribute('data-company') || '';
+
+                // Populate Customer Info Card
+                document.getElementById('cust-name-display').textContent = selectedOption.text.split('(')[0].trim();
+                document.getElementById('cust-company-display').textContent = company ? company : 'Individual Account';
+                document.getElementById('cust-tax-display').textContent = 'GSTIN / Tax ID: ' + taxId;
+                document.getElementById('cust-phone-display').textContent = phone;
+                document.getElementById('cust-email-display').textContent = email;
+                document.getElementById('cust-address-display').textContent = address;
+                document.getElementById('cust-credit-display').textContent = '₹' + parseFloat(creditLimit).toLocaleString('en-IN', {minimumFractionDigits: 2});
+                document.getElementById('cust-outstanding-display').textContent = '₹' + parseFloat(outstanding).toLocaleString('en-IN', {minimumFractionDigits: 2});
+
+                customerCard.style.display = 'block';
+            }
+
+            if (customerSelect) {
+                customerSelect.addEventListener('change', updateCustomerCard);
+                // Initial check on load
+                if (customerSelect.value) updateCustomerCard();
+            }
+
+            // -----------------------------------------------------------------
+            // 2. DYNAMIC PRODUCT SELECTION & LINE ITEM CALCULATIONS
+            // -----------------------------------------------------------------
+            function calculateRow(row) {
+                const productSelect = row.querySelector('.product-select');
+                const qtyInput = row.querySelector('.quantity-input');
+                const priceInput = row.querySelector('.unit-price-input');
+                const gstInput = row.querySelector('.gst-input');
+                const discInput = row.querySelector('.discount-input');
+                const totalDisplay = row.querySelector('.line-total-display');
+                const warningBox = row.querySelector('.stock-warning-box');
+
+                if (!productSelect || !qtyInput || !priceInput || !gstInput || !discInput) return;
+
+                const qty = parseFloat(qtyInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const gstRate = parseFloat(gstInput.value) || 0;
+                const discPct = parseFloat(discInput.value) || 0;
+
+                // Line Calculation logic
+                const baseSubtotal = qty * price;
+                const discountVal = baseSubtotal * (discPct / 100);
+                const taxableAmount = baseSubtotal - discountVal;
+                const gstTaxVal = taxableAmount * (gstRate / 100);
+                const lineTotal = taxableAmount + gstTaxVal;
+
+                if (totalDisplay) {
+                    totalDisplay.value = '₹' + lineTotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
+
+                // Check stock warning
+                const selectedOpt = productSelect.options[productSelect.selectedIndex];
+                if (selectedOpt && selectedOpt.value) {
+                    const stock = parseInt(selectedOpt.getAttribute('data-stock') || '0', 10);
+                    if (qty > stock && warningBox) {
+                        warningBox.textContent = '⚠️ Caution: Qty (' + qty + ') exceeds available stock (' + stock + ')!';
+                        warningBox.style.display = 'block';
+                    } else if (warningBox) {
+                        warningBox.style.display = 'none';
+                    }
+                } else if (warningBox) {
+                    warningBox.style.display = 'none';
+                }
+
+                calculateOverallTotals();
+            }
+
+            function handleProductChange(row) {
+                const productSelect = row.querySelector('.product-select');
+                const priceInput = row.querySelector('.unit-price-input');
+                const gstInput = row.querySelector('.gst-input');
+                const descInput = row.querySelector('.line-desc-input');
+
+                if (!productSelect) return;
+                const selectedOpt = productSelect.options[productSelect.selectedIndex];
+
+                if (selectedOpt && selectedOpt.value) {
+                    const defaultPrice = selectedOpt.getAttribute('data-price');
+                    const defaultGst = selectedOpt.getAttribute('data-gst');
+                    const defaultDesc = selectedOpt.getAttribute('data-description');
+
+                    if (defaultPrice !== null && priceInput && !priceInput.value) {
+                        priceInput.value = parseFloat(defaultPrice).toFixed(2);
+                    }
+                    if (defaultGst !== null && gstInput && !gstInput.value) {
+                        gstInput.value = parseFloat(defaultGst).toFixed(2);
+                    }
+                    if (defaultDesc && descInput && !descInput.value) {
+                        descInput.value = defaultDesc;
+                    }
+                }
+                calculateRow(row);
+            }
+
+            // -----------------------------------------------------------------
+            // 3. OVERALL INVOICE FINANCIAL SUMMARY CALCULATIONS
+            // -----------------------------------------------------------------
+            function calculateOverallTotals() {
+                let invoiceSubtotal = 0;
+                let invoiceTax = 0;
+
+                const rows = itemsTableBody.querySelectorAll('.item-row');
+                rows.forEach(row => {
+                    // Skip deleted rows
+                    const deleteCheck = row.querySelector('input[name$="-DELETE"]');
+                    if (deleteCheck && deleteCheck.checked) return;
+
+                    const qty = parseFloat(row.querySelector('.quantity-input')?.value) || 0;
+                    const price = parseFloat(row.querySelector('.unit-price-input')?.value) || 0;
+                    const gstRate = parseFloat(row.querySelector('.gst-input')?.value) || 0;
+                    const discPct = parseFloat(row.querySelector('.discount-input')?.value) || 0;
+
+                    const baseSub = qty * price;
+                    const discVal = baseSub * (discPct / 100);
+                    const taxable = baseSub - discVal;
+                    const taxVal = taxable * (gstRate / 100);
+
+                    invoiceSubtotal += baseSub;
+                    invoiceTax += taxVal;
+                });
+
+                const overallDiscount = parseFloat(discountTotalInput?.value) || 0;
+                const amountPaid = parseFloat(amountPaidInput?.value) || 0;
+
+                const grandTotal = Math.max(0, (invoiceSubtotal + invoiceTax) - overallDiscount);
+                const balanceDue = Math.max(0, grandTotal - amountPaid);
+
+                document.getElementById('summary-subtotal').textContent = '₹' + invoiceSubtotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('summary-tax').textContent = '₹' + invoiceTax.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('summary-discount').textContent = '- ₹' + overallDiscount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('summary-grand-total').textContent = '₹' + grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('summary-amount-paid').textContent = '₹' + amountPaid.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('summary-balance-due').textContent = '₹' + balanceDue.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
+
+            // Bind Event Listeners to Table Rows
+            itemsTableBody.addEventListener('change', function(e) {
+                const row = e.target.closest('.item-row');
+                if (!row) return;
+
+                if (e.target.classList.contains('product-select')) {
+                    handleProductChange(row);
+                } else if (e.target.classList.contains('quantity-input') ||
+                           e.target.classList.contains('unit-price-input') ||
+                           e.target.classList.contains('gst-input') ||
+                           e.target.classList.contains('discount-input')) {
+                    calculateRow(row);
+                }
+            });
+
+            itemsTableBody.addEventListener('input', function(e) {
+                const row = e.target.closest('.item-row');
+                if (!row) return;
+
+                if (e.target.classList.contains('quantity-input') ||
+                    e.target.classList.contains('unit-price-input') ||
+                    e.target.classList.contains('gst-input') ||
+                    e.target.classList.contains('discount-input')) {
+                    calculateRow(row);
+                }
+            });
+
+            if (discountTotalInput) discountTotalInput.addEventListener('input', calculateOverallTotals);
+            if (amountPaidInput) amountPaidInput.addEventListener('input', calculateOverallTotals);
+
+            // Row Deletion Event Listener
+            itemsTableBody.addEventListener('click', function(e) {
+                if (e.target.classList.contains('btn-remove-row')) {
+                    const row = e.target.closest('.item-row');
+                    if (!row) return;
+
+                    const deleteCheck = row.querySelector('input[name$="-DELETE"]');
+                    const allRows = itemsTableBody.querySelectorAll('.item-row:not([style*="display: none"])');
+
+                    if (allRows.length <= 1) {
+                        alert('An invoice must have at least one line item.');
+                        return;
+                    }
+
+                    if (deleteCheck) {
+                        deleteCheck.checked = true;
+                        row.style.display = 'none';
+                    } else {
+                        row.remove();
+                    }
+                    calculateOverallTotals();
+                }
+            });
+
+            // -----------------------------------------------------------------
+            // 4. DYNAMIC FORMSET ROW ADDITION
+            // -----------------------------------------------------------------
+            if (addItemBtn && totalFormsInput && emptyTemplate) {
+                addItemBtn.addEventListener('click', function() {
+                    const currentFormCount = parseInt(totalFormsInput.value, 10);
+                    let templateHtml = emptyTemplate.innerHTML.replace(/__prefix__/g, currentFormCount);
+
+                    const tempDiv = document.createElement('tbody');
+                    tempDiv.innerHTML = templateHtml;
+                    const newRow = tempDiv.firstElementChild;
+
+                    // Copy options from existing product select to new row
+                    const existingProductSelect = itemsTableBody.querySelector('.product-select');
+                    const newProductSelect = newRow.querySelector('.product-select');
+                    if (existingProductSelect && newProductSelect) {
+                        newProductSelect.innerHTML = existingProductSelect.innerHTML;
+                        newProductSelect.selectedIndex = 0;
+                    }
+
+                    itemsTableBody.appendChild(newRow);
+                    totalFormsInput.value = currentFormCount + 1;
+                    calculateRow(newRow);
+                });
+            }
+
+            // Initial Calculations on Page Load for existing rows
+            const initialRows = itemsTableBody.querySelectorAll('.item-row');
+            initialRows.forEach(row => calculateRow(row));
+        });
+    </script>
+</body>
+</html>

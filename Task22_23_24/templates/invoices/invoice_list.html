@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoices & Billing | Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+        .navbar {
+            background-color: #111827;
+            border-bottom: 1px solid #1f293d;
+            padding: 0.85rem 2rem;
+        }
+        .brand-badge {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 5px;
+        }
+        .card-custom {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .metric-card {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .metric-label {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .table-dark-custom {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            color: #e5e7eb;
+        }
+        .table-dark-custom th {
+            background-color: #1a2336;
+            color: #9ca3af;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 14px 16px;
+            border-bottom: 1px solid #1f293d;
+        }
+        .table-dark-custom td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #161e2e;
+            vertical-align: middle;
+        }
+        .table-dark-custom tr:hover td {
+            background-color: #162032;
+        }
+        .badge-status {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+        .btn-custom-primary {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 600;
+            border: none;
+        }
+        .btn-custom-primary:hover {
+            background-color: #059669;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% if user.is_staff or user.is_superuser %}{% url 'dashboard' %}{% else %}{% url 'distributor_dashboard' %}{% endif %}">
+                <span class="brand-badge">ABS</span>
+                <span class="fw-bold">Advance Billing System</span>
+            </a>
+            <div class="d-flex gap-3 align-items-center">
+                {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">📊 Admin Dashboard</a>
+                {% else %}
+                    <a href="{% url 'distributor_dashboard' %}" class="btn btn-outline-info btn-sm">🚚 Distributor Portal</a>
+                {% endif %}
+                <a href="{% url 'customer_list' %}" class="btn btn-outline-secondary btn-sm">Customers</a>
+                <a href="{% url 'product_list' %}" class="btn btn-outline-secondary btn-sm">Products</a>
+                <a href="{% url 'invoice_list' %}" class="btn btn-emerald btn-sm active text-white" style="background-color:#10b981;">Invoices</a>
+                {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'admin:invoices_invoice_changelist' %}" class="btn btn-outline-info btn-sm">Django Admin</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-white mb-1">Invoices & Customer Billing</h2>
+                <p class="text-secondary mb-0">Manage customer billing accounts, GST tax statements, and payments.</p>
+            </div>
+            <a href="{% url 'invoice_create' %}" class="btn btn-custom-primary px-4 py-2">
+                + Create New Invoice
+            </a>
+        </div>
+
+        <!-- Metric Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value">{{ total_count }}</div>
+                    <div class="metric-label">Total Invoices</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value text-success">{{ paid_count }}</div>
+                    <div class="metric-label">Settled (Paid)</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value text-warning">{{ pending_count }}</div>
+                    <div class="metric-label">Pending Collection</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value text-info">₹{{ total_revenue }}</div>
+                    <div class="metric-label">Total Revenue Collected</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="card-custom">
+            <form method="GET" class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" name="q" value="{{ query }}" class="form-control bg-dark text-white border-secondary" placeholder="Search by Invoice #, Customer Name, Email, Code...">
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select bg-dark text-white border-secondary">
+                        <option value="">-- All Statuses --</option>
+                        {% for code, label in status_choices %}
+                            <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="sort" class="form-select bg-dark text-white border-secondary">
+                        <option value="-created_at" {% if sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                        <option value="created_at" {% if sort == 'created_at' %}selected{% endif %}>Oldest First</option>
+                        <option value="-grand_total" {% if sort == '-grand_total' %}selected{% endif %}>Highest Amount</option>
+                        <option value="grand_total" {% if sort == 'grand_total' %}selected{% endif %}>Lowest Amount</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Invoices Table -->
+        <div class="card-custom p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table-dark-custom">
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Customer</th>
+                            <th>Date Issued</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Grand Total</th>
+                            <th>Balance Due</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td class="fw-bold text-info">
+                                <a href="{% url 'invoice_detail' invoice.pk %}" class="text-info text-decoration-none">
+                                    {{ invoice.invoice_number }}
+                                </a>
+                            </td>
+                            <td>
+                                <div><strong>{{ invoice.customer.name }}</strong></div>
+                                <div class="text-secondary small">{{ invoice.customer.customer_code }}</div>
+                            </td>
+                            <td>{{ invoice.invoice_date|date:"d M Y" }}</td>
+                            <td>{{ invoice.due_date|date:"d M Y"|default:"-" }}</td>
+                            <td>
+                                {% if invoice.status == 'PAID' %}
+                                    <span class="badge bg-success badge-status">Paid</span>
+                                {% elif invoice.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark badge-status">Pending</span>
+                                {% elif invoice.status == 'PARTIALLY_PAID' %}
+                                    <span class="badge bg-info text-dark badge-status">Partial</span>
+                                {% elif invoice.status == 'OVERDUE' %}
+                                    <span class="badge bg-danger badge-status">Overdue</span>
+                                {% else %}
+                                    <span class="badge bg-secondary badge-status">{{ invoice.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold">₹{{ invoice.grand_total }}</td>
+                            <td class="{% if invoice.balance_due > 0 %}text-warning{% else %}text-secondary{% endif %}">
+                                ₹{{ invoice.balance_due }}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'invoice_detail' invoice.pk %}" class="btn btn-outline-light btn-sm px-3">View</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-secondary">
+                                No invoices found matching your criteria.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

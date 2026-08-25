@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Directory | Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+        .navbar {
+            background-color: #111827;
+            border-bottom: 1px solid #1f293d;
+            padding: 0.85rem 2rem;
+        }
+        .brand-badge {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 5px;
+        }
+        .card-custom {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .table-dark-custom {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            color: #e5e7eb;
+        }
+        .table-dark-custom th {
+            background-color: #1a2336;
+            color: #9ca3af;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 14px 16px;
+            border-bottom: 1px solid #1f293d;
+        }
+        .table-dark-custom td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #161e2e;
+            vertical-align: middle;
+        }
+        .table-dark-custom tr:hover td {
+            background-color: #162032;
+        }
+        .badge-active {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-inactive {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .btn-custom-green {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 700;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-custom-green:hover {
+            background-color: #059669;
+            color: #ffffff;
+        }
+        .btn-outline-custom {
+            background-color: transparent;
+            color: #9ca3af;
+            border: 1px solid #374151;
+            padding: 5px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-outline-custom:hover {
+            color: #ffffff;
+            border-color: #6b7280;
+            background-color: #1f293d;
+        }
+        .btn-outline-danger-custom {
+            background-color: transparent;
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 5px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-outline-danger-custom:hover {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #ffffff;
+        }
+        .stat-card {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+        }
+        .stat-val {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 4px;
+        }
+        .stat-lbl {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .form-control, .form-select {
+            background-color: #131b2e;
+            border: 1px solid #1f293d;
+            color: #ffffff;
+            font-size: 0.9rem;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #131b2e;
+            border-color: #10b981;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+        }
+        .search-wrapper {
+            position: relative;
+        }
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            pointer-events: none;
+        }
+        .search-input {
+            padding-left: 40px !important;
+            padding-right: 40px !important;
+        }
+        .clear-search-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: none;
+            line-height: 1;
+        }
+        .clear-search-btn:hover {
+            color: #ffffff;
+        }
+        .pagination .page-link {
+            background-color: #111827;
+            border-color: #1f293d;
+            color: #9ca3af;
+            font-size: 0.85rem;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: #0b0f19;
+            font-weight: 700;
+        }
+        .pagination .page-link:hover {
+            background-color: #1f293d;
+            color: #ffffff;
+            border-color: #374151;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center text-white font-weight-bold" href="{% if user.is_staff or user.is_superuser %}{% url 'dashboard' %}{% else %}{% url 'distributor_dashboard' %}{% endif %}">
+                <span class="brand-badge me-2">ABS</span> Advance Billing System
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'dashboard' %}" class="btn-outline-custom">📊 Admin Dashboard</a>
+                {% else %}
+                    <a href="{% url 'distributor_dashboard' %}" class="btn-outline-custom">🚚 Distributor Portal</a>
+                {% endif %}
+                <a href="{% url 'invoice_list' %}" class="btn-outline-custom">🧾 Invoices & Billing</a>
+                <a href="{% url 'customer_create' %}" class="btn-custom-green">➕ Add Customer</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 mt-4">
+        
+        <!-- Alerts / Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show bg-dark text-light border-secondary mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Page Header -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-white mb-1">Customer Accounts Directory</h3>
+                <p class="text-secondary small mb-0">Manage customer accounts, billing details, contact info, credit limits, and balances.</p>
+            </div>
+            <div class="mt-2 mt-sm-0">
+                <a href="{% url 'customer_create' %}" class="btn-custom-green">
+                    <span>➕</span> Register New Customer Account
+                </a>
+            </div>
+        </div>
+
+        <!-- Metrics Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-lbl">Total Customers</div>
+                    <div class="stat-val">{{ total_count }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-lbl">Active Accounts</div>
+                    <div class="stat-val text-success">{{ active_count }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-lbl">Inactive Accounts</div>
+                    <div class="stat-val text-danger">{{ inactive_count }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-lbl">Total Outstanding</div>
+                    <div class="stat-val text-warning">₹{{ total_outstanding|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Bar & Filter Toolbar -->
+        <div class="card-custom mb-4">
+            <form method="GET" action="{% url 'customer_list' %}" id="filterForm" class="row g-3 align-items-center">
+                
+                <!-- Search Input Field with Icon and Clear button -->
+                <div class="col-lg-5 col-md-12">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        {{ filter_form.q }}
+                        <button type="button" class="clear-search-btn" id="clearSearchBtn" onclick="clearSearchInput()" title="Clear Search">✕</button>
+                    </div>
+                </div>
+
+                <!-- Status Filter Dropdown -->
+                <div class="col-lg-3 col-md-6">
+                    {{ filter_form.status }}
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div class="col-lg-2 col-md-6">
+                    {{ filter_form.sort }}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-lg-2 col-md-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100 fw-semibold" style="background-color: #2563eb; border: none; padding: 0.55rem 1rem;">
+                        Filter
+                    </button>
+                    {% if query or status or sort != '-created_at' %}
+                        <a href="{% url 'customer_list' %}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center px-3" title="Reset Filters">
+                            Reset
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+
+            <!-- Active Search Filter Badge Indicator -->
+            {% if query or status %}
+                <div class="mt-3 pt-3 border-top border-secondary d-flex align-items-center flex-wrap gap-2">
+                    <span class="small text-muted me-1">Active Filters:</span>
+                    {% if query %}
+                        <span class="badge bg-secondary font-monospace">Query: "{{ query }}"</span>
+                    {% endif %}
+                    {% if status %}
+                        <span class="badge bg-info text-dark font-monospace">Status: {{ status|capfirst }}</span>
+                    {% endif %}
+                    <span class="small text-muted ms-auto">Showing {{ filtered_count }} matching customer{% if filtered_count != 1 %}s{% endif %}</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Customer Table -->
+        <div class="card-custom p-0 overflow-hidden mb-4">
+            <div class="table-responsive">
+                <table class="table-dark-custom" id="customerTable">
+                    <thead>
+                        <tr>
+                            <th>Customer Code</th>
+                            <th>Name & Business</th>
+                            <th>Contact Details</th>
+                            <th>City / Location</th>
+                            <th>Credit Limit</th>
+                            <th>Outstanding</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                            <tr class="customer-row">
+                                <td>
+                                    <span class="badge bg-secondary font-monospace">{{ customer.customer_code }}</span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'customer_detail' customer.pk %}" class="text-white text-decoration-none fw-semibold">
+                                        {{ customer.name }}
+                                    </a>
+                                    {% if customer.company_name %}
+                                        <div class="small text-muted">{{ customer.company_name }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="small">✉️ {{ customer.email }}</div>
+                                    <div class="small text-muted">📞 {{ customer.phone }}</div>
+                                </td>
+                                <td>
+                                    <span class="small text-light">{{ customer.city }}{% if customer.state %}, {{ customer.state }}{% endif %}</span>
+                                    {% if customer.country %}
+                                        <div class="small text-muted">{{ customer.country }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>₹{{ customer.credit_limit|floatformat:2 }}</td>
+                                <td>
+                                    <span class="{% if customer.outstanding_balance > 0 %}text-warning fw-semibold{% else %}text-muted{% endif %}">
+                                        ₹{{ customer.outstanding_balance|floatformat:2 }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if customer.is_active %}
+                                        <span class="badge-active">Active</span>
+                                    {% else %}
+                                        <span class="badge-inactive">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-1">
+                                        <a href="{% url 'customer_detail' customer.pk %}" class="btn-outline-custom" title="View Customer Details">
+                                            👁️ View
+                                        </a>
+                                        <a href="{% url 'customer_update' customer.pk %}" class="btn-outline-custom" title="Edit Customer Account">
+                                            ✏️ Edit
+                                        </a>
+                                        <a href="{% url 'customer_delete' customer.pk %}" class="btn-outline-danger-custom" title="Delete Customer">
+                                            🗑️
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <div class="fs-1 mb-2">👤</div>
+                                    <h5>No Customer Accounts Found</h5>
+                                    {% if query or status %}
+                                        <p class="small text-secondary mb-3">No matching records found for query "<strong>{{ query }}</strong>". Try resetting your search parameters.</p>
+                                        <a href="{% url 'customer_list' %}" class="btn btn-outline-secondary btn-sm me-2">Reset Search</a>
+                                    {% else %}
+                                        <p class="small text-secondary mb-3">Get started by creating your first customer profile.</p>
+                                    {% endif %}
+                                    <a href="{% url 'customer_create' %}" class="btn-custom-green btn-sm">+ Add New Customer</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Dynamic Client-Side No Results Row (Hidden by Default) -->
+            <div id="noLiveResults" class="text-center py-5 text-muted d-none">
+                <div class="fs-1 mb-2">🔎</div>
+                <h5>No Matching Customers in Current Page</h5>
+                <p class="small text-secondary mb-0">Try typing a different name, email, phone, or customer code.</p>
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if customers.has_other_pages %}
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="small text-muted">
+                    Showing {{ customers.start_index }} to {{ customers.end_index }} of {{ filtered_count }} customer accounts
+                </div>
+                <nav aria-label="Customer Page Navigation">
+                    <ul class="pagination pagination-sm m-0">
+                        {% if customers.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ customers.previous_page_number }}{% if encoded_query %}&{{ encoded_query }}{% endif %}">&laquo; Previous</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&laquo; Previous</span></li>
+                        {% endif %}
+
+                        {% for i in customers.paginator.page_range %}
+                            {% if customers.number == i %}
+                                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ i }}{% if encoded_query %}&{{ encoded_query }}{% endif %}">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if customers.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ customers.next_page_number }}{% if encoded_query %}&{{ encoded_query }}{% endif %}">Next &raquo;</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Interactive Client-Side Search & Filter Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const statusSelect = document.getElementById('statusSelect');
+            const sortSelect = document.getElementById('sortSelect');
+            const filterForm = document.getElementById('filterForm');
+            const tableRows = document.querySelectorAll('#customerTable tbody tr.customer-row');
+            const noLiveResults = document.getElementById('noLiveResults');
+
+            function toggleClearButton() {
+                if (searchInput.value.trim().length > 0) {
+                    clearBtn.style.display = 'block';
+                } else {
+                    clearBtn.style.display = 'none';
+                }
+            }
+
+            window.clearSearchInput = function() {
+                searchInput.value = '';
+                toggleClearButton();
+                liveSearch();
+            };
+
+            // Client-side Instant Live Search Filter
+            function liveSearch() {
+                const term = searchInput.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    if (term === '' || text.includes(term)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                if (visibleCount === 0 && tableRows.length > 0) {
+                    noLiveResults.classList.remove('d-none');
+                } else {
+                    noLiveResults.classList.add('d-none');
+                }
+            }
+
+            searchInput.addEventListener('input', function() {
+                toggleClearButton();
+                liveSearch();
+            });
+
+            // Initial check on load
+            toggleClearButton();
+
+            // Auto submit when dropdown selections change
+            statusSelect.addEventListener('change', function() {
+                filterForm.submit();
+            });
+
+            sortSelect.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        });
+    </script>
+</body>
+</html>

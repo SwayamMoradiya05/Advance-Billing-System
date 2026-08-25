@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} | Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 4rem;
+        }
+        .navbar {
+            background-color: #111827;
+            border-bottom: 1px solid #1f293d;
+            padding: 0.85rem 2rem;
+        }
+        .brand-badge {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 5px;
+        }
+        .card-custom {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .form-label {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 6px;
+        }
+        .form-control, .form-select, textarea {
+            background-color: #131b2e !important;
+            border: 1px solid #1f293d !important;
+            color: #ffffff !important;
+            border-radius: 8px;
+            padding: 10px 14px;
+            transition: all 0.2s ease-in-out;
+        }
+        .form-control:focus, .form-select:focus, textarea:focus {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25) !important;
+        }
+        .form-control.is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.25) !important;
+        }
+        .form-control.is-valid {
+            border-color: #10b981 !important;
+        }
+        .invalid-feedback {
+            color: #f87171;
+            font-size: 0.8rem;
+            margin-top: 4px;
+            display: block;
+        }
+        .valid-feedback {
+            color: #34d399;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+        .btn-custom-green {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 600;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-custom-green:hover {
+            background-color: #059669;
+            color: #ffffff;
+        }
+        .btn-outline-custom {
+            background-color: transparent;
+            color: #9ca3af;
+            border: 1px solid #374151;
+            padding: 8px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-outline-custom:hover {
+            color: #ffffff;
+            border-color: #6b7280;
+            background-color: #1f293d;
+        }
+        .alert-success-custom {
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+        }
+        .alert-danger-custom {
+            background-color: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center text-white font-weight-bold" href="{% if user.is_staff or user.is_superuser %}{% url 'dashboard' %}{% else %}{% url 'distributor_dashboard' %}{% endif %}">
+                <span class="brand-badge me-2">ABS</span> Advance Billing System
+            </a>
+            <div class="d-flex align-items-center">
+                <a href="{% url 'customer_list' %}" class="btn-outline-custom">Cancel</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container px-4 mt-4" style="max-width: 850px;">
+
+        <!-- Header Title Bar -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-white mb-1">{{ title }}</h3>
+                <p class="text-secondary small mb-0">Register a new client or business account into the billing system.</p>
+            </div>
+            <a href="{% url 'customer_list' %}" class="btn-outline-custom">← Back to Directory</a>
+        </div>
+
+        <!-- Success & Error Alert Banner -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger-custom{% else %}success-custom{% endif %} alert-dismissible fade show mb-4" role="alert">
+                    <div class="d-flex align-items-center gap-2">
+                        {% if message.tags == 'success' %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l4.992-5.99a.75.75 0 0 0-.018-1.05z"/>
+                            </svg>
+                        {% else %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-octagon-fill" viewBox="0 0 16 16">
+                                <path d="M11.46.146A.5.5 0 0 0 11.107 0H4.893a.5.5 0 0 0-.353.146L.146 4.54A.5.5 0 0 0 0 4.893v6.214a.5.5 0 0 0 .146.353l4.394 4.394a.5.5 0 0 0 .353.146h6.214a.5.5 0 0 0 .353-.146l4.394-4.394a.5.5 0 0 0 .146-.353V4.893a.5.5 0 0 0-.146-.353L11.46.146zM8 4c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995A.905.905 0 0 1 8 4zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                            </svg>
+                        {% endif %}
+                        <strong>{{ message }}</strong>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if form.errors %}
+            <div class="alert alert-danger-custom alert-dismissible fade show mb-4">
+                <strong>Validation Errors:</strong> Please review and correct the highlighted fields below.
+            </div>
+        {% endif %}
+
+        <!-- Interactive Customer Add Form -->
+        <form method="POST" id="customerForm" class="card-custom" novalidate>
+            {% csrf_token %}
+
+            <h5 class="text-success fw-bold mb-3 d-flex align-items-center gap-2">
+                <span>👤</span> 1. Primary Contact Information
+            </h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.name.id_for_label }}">Full Name *</label>
+                    {{ form.name }}
+                    <div class="invalid-feedback" id="nameFeedback">
+                        {% if form.name.errors %}{{ form.name.errors.0 }}{% else %}Please enter a valid full name (at least 2 characters).{% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.company_name.id_for_label }}">Company / Business Name</label>
+                    {{ form.company_name }}
+                    <div class="invalid-feedback" id="companyFeedback">
+                        {% if form.company_name.errors %}{{ form.company_name.errors.0 }}{% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.email.id_for_label }}">Email Address *</label>
+                    {{ form.email }}
+                    <div class="invalid-feedback" id="emailFeedback">
+                        {% if form.email.errors %}{{ form.email.errors.0 }}{% else %}Please provide a valid email address format (e.g. user@domain.com).{% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.phone.id_for_label }}">Phone Number *</label>
+                    {{ form.phone }}
+                    <div class="invalid-feedback" id="phoneFeedback">
+                        {% if form.phone.errors %}{{ form.phone.errors.0 }}{% else %}Please enter a valid 7 to 15 digit numerical phone number.{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="text-success fw-bold mb-3 d-flex align-items-center gap-2">
+                <span>📍</span> 2. Address & Location Details
+            </h5>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <label class="form-label" for="{{ form.address.id_for_label }}">Street Address *</label>
+                    {{ form.address }}
+                    <div class="invalid-feedback" id="addressFeedback">
+                        {% if form.address.errors %}{{ form.address.errors.0 }}{% else %}Street address is required.{% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="{{ form.city.id_for_label }}">City</label>
+                    {{ form.city }}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="{{ form.state.id_for_label }}">State / Region</label>
+                    {{ form.state }}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" for="{{ form.postal_code.id_for_label }}">Postal Code</label>
+                    {{ form.postal_code }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.country.id_for_label }}">Country</label>
+                    {{ form.country }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.tax_id.id_for_label }}">Tax ID / GSTIN Number</label>
+                    {{ form.tax_id }}
+                </div>
+            </div>
+
+            <h5 class="text-success fw-bold mb-3 d-flex align-items-center gap-2">
+                <span>💳</span> 3. Financial & Billing Settings
+            </h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.credit_limit.id_for_label }}">Credit Limit ($)</label>
+                    {{ form.credit_limit }}
+                    <div class="invalid-feedback">
+                        {% if form.credit_limit.errors %}{{ form.credit_limit.errors.0 }}{% else %}Credit limit cannot be negative.{% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.outstanding_balance.id_for_label }}">Outstanding Balance ($)</label>
+                    {{ form.outstanding_balance }}
+                    <div class="invalid-feedback">
+                        {% if form.outstanding_balance.errors %}{{ form.outstanding_balance.errors.0 }}{% else %}Outstanding balance cannot be negative.{% endif %}
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check mt-2">
+                        {{ form.is_active }}
+                        <label class="form-check-label text-light ms-2" for="{{ form.is_active.id_for_label }}">
+                            Active Account Status (Enable credit line and immediate billing)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label" for="{{ form.notes.id_for_label }}">Internal Account Notes</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top border-secondary">
+                <a href="{% url 'customer_list' %}" class="btn-outline-custom">Cancel</a>
+                <button type="submit" id="submitBtn" class="btn-custom-green">
+                    <span>💾</span> {{ button_text }}
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+    <!-- Client-Side Real-Time Validation Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.getElementById("customerForm");
+            const nameInput = document.getElementById("id_name");
+            const emailInput = document.getElementById("id_email");
+            const phoneInput = document.getElementById("id_phone");
+            const addressInput = document.getElementById("id_address");
+            const creditLimitInput = document.getElementById("id_credit_limit");
+            const balanceInput = document.getElementById("id_outstanding_balance");
+
+            function validateField(input, condition) {
+                if (condition) {
+                    input.classList.remove("is-invalid");
+                    input.classList.add("is-valid");
+                    return true;
+                } else {
+                    input.classList.remove("is-valid");
+                    input.classList.add("is-invalid");
+                    return false;
+                }
+            }
+
+            if (nameInput) {
+                nameInput.addEventListener("input", function() {
+                    validateField(nameInput, nameInput.value.trim().length >= 2);
+                });
+            }
+
+            if (emailInput) {
+                emailInput.addEventListener("input", function() {
+                    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    validateField(emailInput, regex.test(emailInput.value.trim()));
+                });
+            }
+
+            if (phoneInput) {
+                phoneInput.addEventListener("input", function() {
+                    const digits = phoneInput.value.replace(/\D/g, "");
+                    const hasLetters = /[a-zA-Z]/.test(phoneInput.value);
+                    validateField(phoneInput, !hasLetters && digits.length >= 7 && digits.length <= 15);
+                });
+            }
+
+            if (addressInput) {
+                addressInput.addEventListener("input", function() {
+                    validateField(addressInput, addressInput.value.trim().length > 0);
+                });
+            }
+
+            if (creditLimitInput) {
+                creditLimitInput.addEventListener("input", function() {
+                    const val = parseFloat(creditLimitInput.value);
+                    validateField(creditLimitInput, !isNaN(val) && val >= 0);
+                });
+            }
+
+            if (balanceInput) {
+                balanceInput.addEventListener("input", function() {
+                    const val = parseFloat(balanceInput.value);
+                    validateField(balanceInput, !isNaN(val) && val >= 0);
+                });
+            }
+
+            form.addEventListener("submit", function(e) {
+                let valid = true;
+                if (nameInput && nameInput.value.trim().length < 2) {
+                    validateField(nameInput, false);
+                    valid = false;
+                }
+                if (emailInput && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+                    validateField(emailInput, false);
+                    valid = false;
+                }
+                if (phoneInput) {
+                    const digits = phoneInput.value.replace(/\D/g, "");
+                    const hasLetters = /[a-zA-Z]/.test(phoneInput.value);
+                    if (hasLetters || digits.length < 7 || digits.length > 15) {
+                        validateField(phoneInput, false);
+                        valid = false;
+                    }
+                }
+                if (addressInput && addressInput.value.trim().length === 0) {
+                    validateField(addressInput, false);
+                    valid = false;
+                }
+
+                if (!valid) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const firstInvalid = form.querySelector(".is-invalid");
+                    if (firstInvalid) firstInvalid.focus();
+                }
+            });
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

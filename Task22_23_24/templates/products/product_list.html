@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalog & Inventory | Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+        .navbar {
+            background-color: #111827;
+            border-bottom: 1px solid #1f293d;
+            padding: 0.85rem 2rem;
+        }
+        .brand-badge {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 5px;
+        }
+        .card-custom {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .table-dark-custom {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            color: #e5e7eb;
+        }
+        .table-dark-custom th {
+            background-color: #1a2336;
+            color: #9ca3af;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 14px 16px;
+            border-bottom: 1px solid #1f293d;
+        }
+        .table-dark-custom td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #161e2e;
+            vertical-align: middle;
+        }
+        .table-dark-custom tr:hover td {
+            background-color: #162032;
+        }
+        .badge-in-stock {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-low-stock {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-out-of-stock {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-gst {
+            background-color: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .btn-custom-green {
+            background-color: #10b981;
+            color: #0b0f19;
+            font-weight: 700;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-custom-green:hover {
+            background-color: #059669;
+            color: #ffffff;
+        }
+        .btn-outline-custom {
+            background-color: transparent;
+            color: #9ca3af;
+            border: 1px solid #374151;
+            padding: 5px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-outline-custom:hover {
+            color: #ffffff;
+            border-color: #6b7280;
+            background-color: #1f293d;
+        }
+        .btn-outline-danger-custom {
+            background-color: transparent;
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 5px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-outline-danger-custom:hover {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #ffffff;
+        }
+        .stat-card {
+            background-color: #111827;
+            border: 1px solid #1f293d;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+        }
+        .stat-val {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 4px;
+        }
+        .stat-lbl {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .form-control, .form-select {
+            background-color: #131b2e;
+            border: 1px solid #1f293d;
+            color: #ffffff;
+            font-size: 0.9rem;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #131b2e;
+            border-color: #10b981;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+        }
+        .search-wrapper {
+            position: relative;
+        }
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            pointer-events: none;
+        }
+        .search-input {
+            padding-left: 40px !important;
+            padding-right: 40px !important;
+        }
+        .clear-search-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: none;
+            line-height: 1;
+        }
+        .clear-search-btn:hover {
+            color: #ffffff;
+        }
+        .pagination .page-link {
+            background-color: #111827;
+            border-color: #1f293d;
+            color: #9ca3af;
+            font-size: 0.85rem;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: #0b0f19;
+            font-weight: 700;
+        }
+        .pagination .page-link:hover {
+            background-color: #1f293d;
+            color: #ffffff;
+            border-color: #374151;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center text-white font-weight-bold" href="{% if user.is_staff or user.is_superuser %}{% url 'dashboard' %}{% else %}{% url 'distributor_dashboard' %}{% endif %}">
+                <span class="brand-badge me-2">ABS</span> Advance Billing System
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'dashboard' %}" class="btn-outline-custom">📊 Admin Dashboard</a>
+                {% else %}
+                    <a href="{% url 'distributor_dashboard' %}" class="btn-outline-custom">🚚 Distributor Portal</a>
+                {% endif %}
+                <a href="{% url 'customer_list' %}" class="btn-outline-custom">👥 Customer Accounts</a>
+                <a href="{% url 'invoice_list' %}" class="btn-outline-custom">🧾 Invoices & Billing</a>
+                <a href="{% url 'product_create' %}" class="btn-custom-green">📦 Add Product</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 mt-4">
+
+        <!-- Alerts / Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show bg-dark text-light border-secondary mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Page Header -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-white mb-1">Product Catalog & Stock Management</h3>
+                <p class="text-secondary small mb-0">Manage products, pricing, stock levels, GST tax slabs, and valuation.</p>
+            </div>
+            <div class="mt-2 mt-md-0">
+                <a href="{% url 'api_product_list' %}" target="_blank" class="btn-outline-custom me-2">🔌 REST API Endpoint</a>
+                <a href="{% url 'product_create' %}" class="btn-custom-green">➕ Add New Product</a>
+            </div>
+        </div>
+
+        <!-- System KPI Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="stat-lbl">Total Products</div>
+                    <div class="stat-val text-white">{{ total_count }}</div>
+                    <small class="text-muted">{{ active_count }} active in catalog</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card" style="border-left: 4px solid #f59e0b;">
+                    <div class="stat-lbl">Low Stock Alerts</div>
+                    <div class="stat-val text-warning">{{ low_stock_count }}</div>
+                    <small class="text-secondary">Needs reorder</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card" style="border-left: 4px solid #ef4444;">
+                    <div class="stat-lbl">Out of Stock</div>
+                    <div class="stat-val text-danger">{{ out_of_stock_count }}</div>
+                    <small class="text-secondary">Zero inventory</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card" style="border-left: 4px solid #10b981;">
+                    <div class="stat-lbl">Inventory Valuation</div>
+                    <div class="stat-val text-success">₹{{ total_valuation|floatformat:2 }}</div>
+                    <small class="text-secondary">₹{{ total_valuation_with_gst|floatformat:2 }} (incl. GST)</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="card-custom mb-4">
+            <form method="GET" action="{% url 'product_list' %}" id="search-filter-form">
+                <div class="row g-3 align-items-center">
+                    <div class="col-12 col-md-5">
+                        <div class="search-wrapper">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" name="q" value="{{ query }}" id="search-input" class="form-control search-input" placeholder="Search by Product Name, SKU, HSN Code, or Category...">
+                            {% if query %}
+                                <a href="{% url 'product_list' %}" class="clear-search-btn" style="display: block;" title="Clear Search">&times;</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        {{ filter_form.category }}
+                    </div>
+                    <div class="col-6 col-md-2">
+                        {{ filter_form.stock_status }}
+                    </div>
+                    <div class="col-12 col-md-2">
+                        {{ filter_form.sort_by }}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Product Data Table -->
+        <div class="card-custom p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table-dark-custom align-middle" id="products-table">
+                    <thead>
+                        <tr>
+                            <th>SKU & Product Name</th>
+                            <th>Category</th>
+                            <th class="text-end">Base Price (₹)</th>
+                            <th class="text-center">GST Tax</th>
+                            <th class="text-end">Final Price (₹)</th>
+                            <th class="text-center">Stock Quantity</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if products %}
+                            {% for product in products %}
+                                <tr class="product-row" data-name="{{ product.name|lower }}" data-sku="{{ product.sku|lower }}" data-category="{{ product.category|lower }}">
+                                    <td>
+                                        <div class="fw-bold text-white fs-6">
+                                            <a href="{% url 'product_detail' product.pk %}" class="text-white text-decoration-none text-hover-emerald">
+                                                {{ product.name }}
+                                            </a>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2 mt-1">
+                                            <span class="badge bg-secondary font-monospace" style="font-size: 0.7rem;">{{ product.sku }}</span>
+                                            {% if product.hsn_code %}
+                                                <small class="text-muted">HSN: {{ product.hsn_code }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-light small">{{ product.get_category_display }}</span>
+                                    </td>
+                                    <td class="text-end font-monospace text-light">
+                                        ₹{{ product.price|floatformat:2 }}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge-gst">{{ product.gst_rate }}%</span>
+                                        <div class="text-muted" style="font-size: 0.7rem;">(+₹{{ product.gst_amount|floatformat:2 }})</div>
+                                    </td>
+                                    <td class="text-end font-monospace text-emerald fw-bold" style="color: #34d399;">
+                                        ₹{{ product.price_with_gst|floatformat:2 }}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-bold fs-6 text-white">{{ product.stock }}</span>
+                                        <span class="text-muted small"> {{ product.unit }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if product.stock <= 0 %}
+                                            <span class="badge-out-of-stock">Out of Stock</span>
+                                        {% elif product.is_low_stock %}
+                                            <span class="badge-low-stock">Low Stock (≤{{ product.min_stock_level }})</span>
+                                        {% else %}
+                                            <span class="badge-in-stock">In Stock</span>
+                                        {% endif %}
+                                        {% if not product.is_active %}
+                                            <div class="text-danger mt-1" style="font-size: 0.7rem;">[Inactive]</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group gap-1" role="group">
+                                            <a href="{% url 'product_detail' product.pk %}" class="btn-outline-custom" title="View Details">👁️ View</a>
+                                            <a href="{% url 'product_edit' product.pk %}" class="btn-outline-custom" title="Edit Product">✏️ Edit</a>
+                                            <a href="{% url 'product_delete' product.pk %}" class="btn-outline-danger-custom" title="Delete Product">🗑️ Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-secondary">
+                                    <div class="fs-4 mb-2">📦 No Products Found</div>
+                                    <p class="mb-3">No products match your search or filter criteria.</p>
+                                    <a href="{% url 'product_create' %}" class="btn-custom-green">➕ Add Your First Product</a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            {% if products.has_other_pages %}
+                <div class="d-flex justify-content-between align-items-center p-3 border-top border-secondary bg-dark">
+                    <span class="text-secondary small">
+                        Showing page {{ products.number }} of {{ products.paginator.num_pages }} ({{ filtered_count }} products)
+                    </span>
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if products.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if encoded_query %}&{{ encoded_query }}{% endif %}">&laquo; First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ products.previous_page_number }}{% if encoded_query %}&{{ encoded_query }}{% endif %}">Previous</a>
+                            </li>
+                        {% endif %}
+
+                        {% for page_num in products.paginator.page_range %}
+                            {% if page_num == products.number %}
+                                <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                            {% elif page_num > products.number|add:'-3' and page_num < products.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_num }}{% if encoded_query %}&{{ encoded_query }}{% endif %}">{{ page_num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if products.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ products.next_page_number }}{% if encoded_query %}&{{ encoded_query }}{% endif %}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ products.paginator.num_pages }}{% if encoded_query %}&{{ encoded_query }}{% endif %}">Last &raquo;</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS & Auto-submit Search Filters Script -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('search-filter-form');
+            const categorySelect = form.querySelector('select[name="category"]');
+            const stockStatusSelect = form.querySelector('select[name="stock_status"]');
+            const sortBySelect = form.querySelector('select[name="sort_by"]');
+
+            [categorySelect, stockStatusSelect, sortBySelect].forEach(select => {
+                if (select) {
+                    select.addEventListener('change', function() {
+                        form.submit();
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
