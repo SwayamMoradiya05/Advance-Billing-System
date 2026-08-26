@@ -614,12 +614,13 @@
         }
     </style>
 </head>
+{% load static %}
 <body>
 
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-brand">
-            <span class="brand-badge">ADM</span>
+            <img src="{% static 'images/company_logo.jpg' %}" alt="Advance Billing System Logo" style="height: 38px; border-radius: 6px; object-fit: contain;">
             <span class="brand-name">Admin Governance Suite</span>
             <a href="{% url 'product_list' %}" style="margin-left: 15px; background-color: #10b981; color: #0b0f19; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-weight: 700; font-size: 0.85rem;">📦 Product Catalog</a>
             <a href="{% url 'customer_list' %}" style="background-color: #131b2e; color: #34d399; border: 1px solid #10b981; text-decoration: none; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.85rem;">👥 Customers Directory</a>

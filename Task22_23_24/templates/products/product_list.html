@@ -224,13 +224,14 @@
         }
     </style>
 </head>
+{% load static %}
 <body>
 
     <!-- Header Navigation -->
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid px-4">
             <a class="navbar-brand d-flex align-items-center text-white font-weight-bold" href="{% if user.is_staff or user.is_superuser %}{% url 'dashboard' %}{% else %}{% url 'distributor_dashboard' %}{% endif %}">
-                <span class="brand-badge me-2">ABS</span> Advance Billing System
+                <img src="{% static 'images/company_logo.jpg' %}" alt="Advance Billing System Logo" style="height: 38px; border-radius: 6px; object-fit: contain; margin-right: 10px;"> Advance Billing System
             </a>
             <div class="d-flex align-items-center gap-3">
                 {% if user.is_staff or user.is_superuser %}

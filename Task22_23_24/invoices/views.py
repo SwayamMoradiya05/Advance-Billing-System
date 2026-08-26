@@ -1,11 +1,14 @@
+import base64
+import os
 import json
 from decimal import Decimal
 from functools import wraps
 
+from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponseNotAllowed, HttpResponseForbidden
+from django.http import HttpResponse, JsonResponse, HttpResponseNotAllowed, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q, Sum
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -13,6 +16,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Invoice, InvoiceItem
 from .forms import InvoiceForm, InvoiceItemFormSet
 from .serializers import InvoiceSerializer, InvoiceItemSerializer
+from .utils import render_to_pdf
 from customers.models import Customer
 from products.models import Product
 
@@ -117,6 +121,55 @@ def invoice_detail_view(request, pk):
         'items': invoice.items.all(),
     }
     return render(request, 'invoices/invoice_detail.html', context)
+
+
+@login_required
+def invoice_pdf_view(request, pk):
+    """
+    Generate and stream downloadable PDF document for a specific Invoice with logo and company branding.
+    """
+    invoice = get_object_or_404(Invoice.objects.select_related('customer', 'created_by').prefetch_related('items__product'), pk=pk)
+
+    # Encode logo image into Base64 string for standalone PDF embedding
+    logo_base64 = None
+    logo_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'company_logo.jpg')
+    if os.path.exists(logo_path):
+        try:
+            with open(logo_path, "rb") as img_file:
+                logo_base64 = f"data:image/jpeg;base64,{base64.b64encode(img_file.read()).decode('utf-8')}"
+        except Exception:
+            logo_base64 = None
+
+    company_info = {
+        'name': 'Advance Billing System Pvt. Ltd.',
+        'tagline': 'Enterprise Wholesale & Logistics Solutions',
+        'gstin': '24AAACA0000A1Z5',
+        'address': 'Suite 502, Industrial Trade Center, Sector 11',
+        'city_state': 'Ahmedabad, Gujarat - 380015',
+        'phone': '+91 98765 43210',
+        'email': 'billing@advancebilling.com',
+        'website': 'www.advancebilling.com',
+        'bank_name': 'HDFC Bank Ltd.',
+        'bank_account': '50200012345678',
+        'bank_ifsc': 'HDFC0000123',
+        'upi_id': 'advancebilling@hdfcbank'
+    }
+
+    context = {
+        'invoice': invoice,
+        'items': invoice.items.all(),
+        'logo_base64': logo_base64,
+        'company': company_info,
+    }
+    pdf_content = render_to_pdf('invoices/invoice_pdf.html', context)
+    if pdf_content:
+        filename = f"Invoice_{invoice.invoice_number}.pdf"
+        response = HttpResponse(pdf_content, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    messages.error(request, "Failed to generate PDF document. Please try again.")
+    return redirect('invoice_detail', pk=invoice.pk)
 
 
 @login_required

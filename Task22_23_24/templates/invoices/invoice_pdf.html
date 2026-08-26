@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tax Invoice {{ invoice.invoice_number }}</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 1.2cm;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 9.5pt;
+            color: #1e293b;
+            line-height: 1.35;
+        }
+
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #059669;
+            padding-bottom: 12px;
+        }
+
+        .logo-img {
+            height: 55px;
+        }
+
+        .brand-name {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #065f46;
+        }
+
+        .brand-tagline {
+            font-size: 8.5pt;
+            color: #64748b;
+        }
+
+        .company-gstin {
+            font-size: 8.5pt;
+            color: #334155;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        .invoice-title {
+            font-size: 22pt;
+            font-weight: bold;
+            color: #0f172a;
+            text-align: right;
+        }
+
+        .invoice-number {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #059669;
+            text-align: right;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 8pt;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #10b981;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        .status-badge.PENDING { background-color: #d97706; }
+        .status-badge.CANCELLED { background-color: #dc2626; }
+        .status-badge.DRAFT { background-color: #64748b; }
+
+        .cards-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+        }
+
+        .card-cell {
+            vertical-align: top;
+            width: 48%;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px 12px;
+        }
+
+        .card-title {
+            font-size: 8.5pt;
+            font-weight: bold;
+            color: #059669;
+            text-transform: uppercase;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+        }
+
+        .party-name {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .party-detail {
+            font-size: 8.5pt;
+            color: #334155;
+        }
+
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .meta-table td {
+            font-size: 8.5pt;
+            padding: 2px 0;
+        }
+
+        .meta-label {
+            color: #64748b;
+            font-weight: bold;
+        }
+
+        .meta-value {
+            text-align: right;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .items-table th {
+            background-color: #0f172a;
+            color: #ffffff;
+            font-size: 8pt;
+            text-transform: uppercase;
+            padding: 7px 6px;
+            border: 1px solid #0f172a;
+        }
+
+        .items-table td {
+            padding: 7px 6px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 9pt;
+            vertical-align: middle;
+        }
+
+        .items-table tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+
+        .bottom-section-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .bottom-cell-left {
+            vertical-align: top;
+            width: 55%;
+            padding-right: 15px;
+        }
+
+        .bottom-cell-right {
+            vertical-align: top;
+            width: 45%;
+        }
+
+        .bank-box {
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 12px;
+            font-size: 8.5pt;
+        }
+
+        .bank-title {
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-size: 8pt;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .summary-table td {
+            padding: 5px 8px;
+            font-size: 9pt;
+        }
+
+        .summary-label {
+            color: #475569;
+        }
+
+        .summary-val {
+            font-weight: bold;
+            text-align: right;
+            color: #0f172a;
+        }
+
+        .grand-total-row td {
+            background-color: #059669;
+            color: #ffffff;
+            font-size: 11pt;
+            font-weight: bold;
+            padding: 7px 8px;
+        }
+
+        .grand-total-row .summary-val {
+            color: #ffffff;
+        }
+
+        .signatory-box {
+            margin-top: 15px;
+            text-align: right;
+        }
+
+        .stamp-space {
+            height: 45px;
+        }
+
+        .signatory-title {
+            font-size: 8.5pt;
+            font-weight: bold;
+            color: #334155;
+            border-top: 1px dashed #cbd5e1;
+            display: inline-block;
+            padding-top: 4px;
+            width: 180px;
+            text-align: center;
+        }
+
+        .terms-box {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 8px;
+            font-size: 8pt;
+            color: #64748b;
+        }
+
+        .terms-heading {
+            font-weight: bold;
+            color: #334155;
+            margin-bottom: 2px;
+        }
+
+        .footer-bar {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 7.5pt;
+            color: #94a3b8;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section with Logo & Brand -->
+    <table class="header-table">
+        <tr>
+            <td style="vertical-align: middle;" width="60%">
+                {% if logo_base64 %}
+                    <img src="{{ logo_base64 }}" class="logo-img" alt="Company Logo"><br>
+                {% else %}
+                    <div class="brand-name">{{ company.name }}</div>
+                {% endif %}
+                <div class="brand-tagline">{{ company.tagline }}</div>
+                <div class="company-gstin">GSTIN: {{ company.gstin }}</div>
+            </td>
+            <td style="vertical-align: middle;" width="40%" class="text-right">
+                <div class="invoice-title">TAX INVOICE</div>
+                <div class="invoice-number">{{ invoice.invoice_number }}</div>
+                <div>
+                    <span class="status-badge {{ invoice.status }}">
+                        {{ invoice.get_status_display }}
+                    </span>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Dual Column Billing Information Cards -->
+    <table class="cards-table">
+        <tr>
+            <!-- Billed By -->
+            <td class="card-cell">
+                <div class="card-title">Billed By (Supplier / Vendor)</div>
+                <div class="party-name">{{ company.name }}</div>
+                <div class="party-detail">{{ company.address }}</div>
+                <div class="party-detail">{{ company.city_state }}</div>
+                <div class="party-detail"><strong>GSTIN:</strong> {{ company.gstin }}</div>
+                <div class="party-detail"><strong>Phone:</strong> {{ company.phone }} | <strong>Email:</strong> {{ company.email }}</div>
+            </td>
+            
+            <td style="width: 4%;"></td>
+
+            <!-- Billed To & Invoice Metadata -->
+            <td class="card-cell">
+                <div class="card-title">Billed To (Customer Account)</div>
+                <div class="party-name">{{ invoice.customer.name }}</div>
+                {% if invoice.customer.company_name %}
+                    <div class="party-detail"><strong>{{ invoice.customer.company_name }}</strong></div>
+                {% endif %}
+                <div class="party-detail">{{ invoice.customer.full_address }}</div>
+                <div class="party-detail"><strong>GSTIN / Tax ID:</strong> {{ invoice.customer.tax_id|default:"N/A" }}</div>
+                <div class="party-detail"><strong>Phone:</strong> {{ invoice.customer.phone }} | <strong>Email:</strong> {{ invoice.customer.email }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Invoice Metadata Bar -->
+    <div style="background-color: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px 12px; margin-bottom: 15px;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="font-size: 8.5pt;"><span class="meta-label">Issue Date:</span> <strong>{{ invoice.invoice_date|date:"d M Y" }}</strong></td>
+                <td style="font-size: 8.5pt;"><span class="meta-label">Payment Due Date:</span> <strong>{{ invoice.due_date|date:"d M Y"|default:"Due on Receipt" }}</strong></td>
+                <td style="font-size: 8.5pt;"><span class="meta-label">Payment Mode:</span> <strong>{{ invoice.get_payment_method_display }}</strong></td>
+                <td style="font-size: 8.5pt;"><span class="meta-label">Terms:</span> <strong>{{ invoice.payment_terms }}</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Product Line Items Table -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;" class="text-center">#</th>
+                <th style="width: 33%;" class="text-left">Product Item & Description</th>
+                <th style="width: 8%;" class="text-center">Qty</th>
+                <th style="width: 14%;" class="text-right">Unit Price</th>
+                <th style="width: 11%;" class="text-right">GST Rate</th>
+                <th style="width: 13%;" class="text-right">GST Tax</th>
+                <th style="width: 16%;" class="text-right">Total Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td class="text-center">{{ forloop.counter }}</td>
+                <td class="text-left">
+                    <strong>{{ item.product.name }}</strong>
+                    {% if item.product.sku %}
+                        <span style="font-size: 7.5pt; color: #64748b;">(SKU: {{ item.product.sku }})</span>
+                    {% endif %}
+                    {% if item.description %}
+                        <div style="font-size: 8pt; color: #475569; margin-top: 2px;">{{ item.description }}</div>
+                    {% endif %}
+                </td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td class="text-right">&#8377;{{ item.unit_price }}</td>
+                <td class="text-right">{{ item.gst_rate }}%</td>
+                <td class="text-right">&#8377;{{ item.tax_amount }}</td>
+                <td class="text-right"><strong>&#8377;{{ item.total_amount }}</strong></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center" style="color: #64748b; padding: 15px;">No line items attached to this invoice.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Bottom Section: Payment Info & Financial Summary -->
+    <table class="bottom-section-table">
+        <tr>
+            <!-- Left: Bank Details & Payment Instructions -->
+            <td class="bottom-cell-left">
+                <div class="bank-box">
+                    <div class="bank-title">💳 Bank Payment Details</div>
+                    <div><strong>Bank Name:</strong> {{ company.bank_name }}</div>
+                    <div><strong>Account No:</strong> {{ company.bank_account }}</div>
+                    <div><strong>IFSC Code:</strong> {{ company.bank_ifsc }}</div>
+                    <div><strong>UPI ID:</strong> {{ company.upi_id }}</div>
+                </div>
+
+                {% if invoice.notes %}
+                <div style="font-size: 8.5pt; color: #334155; margin-bottom: 10px;">
+                    <strong>Remarks / Notes:</strong> {{ invoice.notes }}
+                </div>
+                {% endif %}
+            </td>
+
+            <!-- Right: Financial Summary -->
+            <td class="bottom-cell-right">
+                <table class="summary-table">
+                    <tr>
+                        <td class="summary-label">Subtotal (Excl. Tax):</td>
+                        <td class="summary-val">&#8377;{{ invoice.subtotal }}</td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">Total GST Tax:</td>
+                        <td class="summary-val">&#8377;{{ invoice.tax_amount }}</td>
+                    </tr>
+                    {% if invoice.discount_amount > 0 %}
+                    <tr>
+                        <td class="summary-label">Overall Discount:</td>
+                        <td class="summary-val" style="color: #dc2626;">- &#8377;{{ invoice.discount_amount }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="grand-total-row">
+                        <td>Grand Total:</td>
+                        <td class="summary-val">&#8377;{{ invoice.grand_total }}</td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">Amount Paid:</td>
+                        <td class="summary-val" style="color: #059669;">&#8377;{{ invoice.amount_paid }}</td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label" style="font-weight: bold; color: #dc2626;">Balance Due:</td>
+                        <td class="summary-val" style="color: #dc2626;">&#8377;{{ invoice.balance_due }}</td>
+                    </tr>
+                </table>
+
+                <!-- Authorized Signatory Stamp Box -->
+                <div class="signatory-box">
+                    <div style="font-size: 8pt; font-weight: bold; color: #334155; margin-bottom: 2px;">For {{ company.name }}</div>
+                    <div class="stamp-space"></div>
+                    <div class="signatory-title">Authorized Signatory</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Terms and Conditions -->
+    {% if invoice.terms_and_conditions %}
+    <div class="terms-box">
+        <div class="terms-heading">Terms & Conditions of Sale:</div>
+        <div>{{ invoice.terms_and_conditions }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Footer Note -->
+    <div class="footer-bar">
+        This is a computer-generated commercial tax invoice issued by {{ company.name }}. All disputes subject to local jurisdiction.
+    </div>
+
+</body>
+</html>

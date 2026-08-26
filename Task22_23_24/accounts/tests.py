@@ -18,7 +18,8 @@ class AuthenticationTests(TestCase):
         self.user = User.objects.create_user(
             username=self.username,
             email='john@example.com',
-            password=self.password
+            password=self.password,
+            is_staff=True
         )
         self.inactive_user = User.objects.create_user(
             username='inactive',

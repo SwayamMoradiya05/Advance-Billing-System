@@ -291,15 +291,33 @@ class InvoiceFormAndAccessTestCase(TestCase):
         self.client.login(username="admin_user", password="password123")
         
         # Customer Detail API
-        cust_url = reverse('api_customer_detail', kwargs={'pk': self.customer1.id})
+        cust_url = reverse('api_invoice_customer_detail', kwargs={'pk': self.customer1.id})
         res_cust = self.client.get(cust_url)
         self.assertEqual(res_cust.status_code, 200)
         self.assertTrue(res_cust.json()['success'])
         self.assertEqual(res_cust.json()['customer']['name'], self.customer1.name)
 
         # Product Detail API
-        prod_url = reverse('api_product_detail', kwargs={'pk': self.product_in_stock.id})
+        prod_url = reverse('api_invoice_product_detail', kwargs={'pk': self.product_in_stock.id})
         res_prod = self.client.get(prod_url)
         self.assertEqual(res_prod.status_code, 200)
         self.assertTrue(res_prod.json()['success'])
         self.assertEqual(res_prod.json()['product']['sku'], self.product_in_stock.sku)
+
+    def test_invoice_pdf_download_view(self):
+        """Test PDF generation view returns 200 OK and valid PDF binary bytes."""
+        invoice = Invoice.objects.create(customer=self.customer1, created_by=self.admin_user)
+        InvoiceItem.objects.create(invoice=invoice, product=self.product_in_stock, quantity=2)
+
+        # Unauthenticated -> redirect to login
+        pdf_url = reverse('invoice_pdf', kwargs={'pk': invoice.id})
+        response = self.client.get(pdf_url)
+        self.assertEqual(response.status_code, 302)
+
+        # Authenticated -> 200 OK with PDF binary stream
+        self.client.login(username="admin_user", password="password123")
+        response = self.client.get(pdf_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+        self.assertIn(f'filename="Invoice_{invoice.invoice_number}.pdf"', response['Content-Disposition'])
+        self.assertTrue(response.content.startswith(b'%PDF-'))

@@ -174,11 +174,12 @@
         }
     </style>
 </head>
+{% load static %}
 <body>
 
     <div class="login-card">
-        <div class="brand-header">
-            <span class="brand-badge">DIS</span>
+        <div class="brand-header" style="justify-content: center; text-align: center; flex-direction: column; gap: 8px;">
+            <img src="{% static 'images/company_logo.jpg' %}" alt="Advance Billing System Logo" style="height: 55px; border-radius: 8px; object-fit: contain;">
             <span class="brand-title">Distributor Logistics Portal</span>
         </div>
 

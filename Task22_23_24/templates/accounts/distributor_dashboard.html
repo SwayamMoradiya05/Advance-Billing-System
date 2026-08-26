@@ -137,13 +137,14 @@
         }
     </style>
 </head>
+{% load static %}
 <body>
 
     <!-- Header Navigation -->
     <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
         <div class="container-fluid px-lg-5">
-            <a class="navbar-brand" href="{% url 'distributor_dashboard' %}">
-                <span class="brand-icon">DIS</span>
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'distributor_dashboard' %}">
+                <img src="{% static 'images/company_logo.jpg' %}" alt="Advance Billing System Logo" style="height: 38px; border-radius: 6px; object-fit: contain;">
                 <span>Distributor Logistics Suite</span>
             </a>
             <a href="{% url 'product_list' %}" class="btn btn-sm btn-distributor ms-3 d-none d-md-inline-block">📦 Product Catalog & Stock</a>
