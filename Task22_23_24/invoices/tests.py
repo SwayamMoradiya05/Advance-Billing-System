@@ -318,6 +318,8 @@ class InvoiceFormAndAccessTestCase(TestCase):
         self.client.login(username="admin_user", password="password123")
         response = self.client.get(pdf_url)
         self.assertEqual(response.status_code, 200)
+        self.assertIn('qr_base64', response.context)
+        self.assertTrue(response.context['qr_base64'].startswith('data:image/png;base64,'))
         self.assertEqual(response['Content-Type'], 'application/pdf')
         self.assertIn(f'filename="Invoice_{invoice.invoice_number}.pdf"', response['Content-Disposition'])
         self.assertTrue(response.content.startswith(b'%PDF-'))

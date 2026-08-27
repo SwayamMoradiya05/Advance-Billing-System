@@ -383,18 +383,32 @@
     <!-- Bottom Section: Payment Info & Financial Summary -->
     <table class="bottom-section-table">
         <tr>
-            <!-- Left: Bank Details & Payment Instructions -->
+            <!-- Left: Bank Details & QR Verification -->
             <td class="bottom-cell-left">
-                <div class="bank-box">
-                    <div class="bank-title">💳 Bank Payment Details</div>
-                    <div><strong>Bank Name:</strong> {{ company.bank_name }}</div>
-                    <div><strong>Account No:</strong> {{ company.bank_account }}</div>
-                    <div><strong>IFSC Code:</strong> {{ company.bank_ifsc }}</div>
-                    <div><strong>UPI ID:</strong> {{ company.upi_id }}</div>
-                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px;">
+                    <tr>
+                        <td style="vertical-align: top;" width="62%">
+                            <div class="bank-box" style="margin-bottom: 0;">
+                                <div class="bank-title">💳 Bank Payment Details</div>
+                                <div><strong>Bank Name:</strong> {{ company.bank_name }}</div>
+                                <div><strong>Account No:</strong> {{ company.bank_account }}</div>
+                                <div><strong>IFSC Code:</strong> {{ company.bank_ifsc }}</div>
+                                <div><strong>UPI ID:</strong> {{ company.upi_id }}</div>
+                            </div>
+                        </td>
+                        <td style="vertical-align: top; padding-left: 8px;" width="38%">
+                            {% if qr_base64 %}
+                            <div style="border: 1px solid #cbd5e1; background-color: #ffffff; border-radius: 6px; padding: 5px; text-align: center;">
+                                <img src="{{ qr_base64 }}" style="width: 80px; height: 80px; display: block; margin: 0 auto;" alt="Official Invoice QR Code">
+                                <div style="font-size: 6.5pt; font-weight: bold; color: #059669; margin-top: 3px;">VERIFIED QR INTAKE</div>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
 
                 {% if invoice.notes %}
-                <div style="font-size: 8.5pt; color: #334155; margin-bottom: 10px;">
+                <div style="font-size: 8.5pt; color: #334155; margin-top: 6px; margin-bottom: 10px;">
                     <strong>Remarks / Notes:</strong> {{ invoice.notes }}
                 </div>
                 {% endif %}

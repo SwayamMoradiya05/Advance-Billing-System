@@ -1,6 +1,8 @@
 import base64
 import os
 import json
+from io import BytesIO
+import qrcode
 from decimal import Decimal
 from functools import wraps
 
@@ -155,10 +157,34 @@ def invoice_pdf_view(request, pk):
         'upi_id': 'advancebilling@hdfcbank'
     }
 
+    # Generate Dynamic Verification QR Code
+    qr_base64 = None
+    try:
+        qr_payload = json.dumps({
+            'invoice': invoice.invoice_number,
+            'customer': invoice.customer.name if invoice.customer else 'N/A',
+            'date': invoice.invoice_date.strftime('%Y-%m-%d') if invoice.invoice_date else '',
+            'due_date': invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else '',
+            'items_count': invoice.total_items_count,
+            'subtotal': str(invoice.subtotal),
+            'tax': str(invoice.tax_amount),
+            'total': str(invoice.grand_total),
+            'status': invoice.status,
+            'verified': True,
+            'hash': f"VERIFIED-INTAKE-{invoice.pk}-{invoice.invoice_number}"
+        })
+        qr_img = qrcode.make(qr_payload)
+        qr_buffer = BytesIO()
+        qr_img.save(qr_buffer, format="PNG")
+        qr_base64 = f"data:image/png;base64,{base64.b64encode(qr_buffer.getvalue()).decode('utf-8')}"
+    except Exception:
+        qr_base64 = None
+
     context = {
         'invoice': invoice,
         'items': invoice.items.all(),
         'logo_base64': logo_base64,
+        'qr_base64': qr_base64,
         'company': company_info,
     }
     pdf_content = render_to_pdf('invoices/invoice_pdf.html', context)
