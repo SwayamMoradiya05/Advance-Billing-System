@@ -12,6 +12,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .forms import LoginForm, DistributorLoginForm, DistributorRegistrationForm, DistributorProfileForm
 from .models import OTPCode, DistributorProfile
+from .serializers import AdminRegistrationSerializer
 
 User = get_user_model()
 
@@ -156,6 +157,52 @@ def api_register_view(request):
     else:
         errors = {field: [str(e) for e in err_list] for field, err_list in form.errors.items()}
         return JsonResponse({'error': 'Validation failed', 'details': errors}, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_admin_register_view(request):
+    """API endpoint for Admin / Staff User Registration"""
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, TypeError):
+        data = request.POST
+
+    serializer = AdminRegistrationSerializer(data)
+    if serializer.is_valid():
+        cdata = serializer.cleaned_data
+        user = User.objects.create_user(
+            username=cdata['username'],
+            email=cdata['email'],
+            password=cdata['password'],
+            first_name=cdata['first_name'],
+            last_name=cdata['last_name']
+        )
+        user.is_staff = True
+        if cdata['is_superuser']:
+            user.is_superuser = True
+        user.save()
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Admin account created successfully.',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'is_staff': user.is_staff,
+                'is_superuser': user.is_superuser,
+            }
+        }, status=201)
+    else:
+        return JsonResponse({
+            'status': 'error',
+            'error': 'Validation failed',
+            'details': serializer.errors
+        }, status=400)
+
 
 @csrf_exempt
 @require_http_methods(["POST"])

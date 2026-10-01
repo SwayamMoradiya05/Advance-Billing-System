@@ -74,3 +74,58 @@ class OTPVerifySerializer:
         self.code = str(code).strip()
         self.new_password = new_password
         return True
+
+
+class AdminRegistrationSerializer:
+    """
+    Serializer / Validator for Admin User Registration API payloads.
+    """
+    def __init__(self, data):
+        self.data = data
+        self.errors = {}
+        self.cleaned_data = {}
+
+    def is_valid(self):
+        import re
+        username = str(self.data.get('username', '')).strip()
+        email = str(self.data.get('email', '')).strip().lower()
+        password = self.data.get('password')
+        first_name = str(self.data.get('first_name', '')).strip()
+        last_name = str(self.data.get('last_name', '')).strip()
+        is_superuser = bool(self.data.get('is_superuser', False))
+
+        if not username:
+            self.errors['username'] = ['Username is required.']
+        elif len(username) < 3:
+            self.errors['username'] = ['Username must be at least 3 characters long.']
+        elif User.objects.filter(username__iexact=username).exists():
+            self.errors['username'] = ['A user with this username already exists.']
+
+        if not email:
+            self.errors['email'] = ['Email address is required.']
+        else:
+            email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_regex, email):
+                self.errors['email'] = ['Please enter a valid email address format.']
+            elif User.objects.filter(email__iexact=email).exists():
+                self.errors['email'] = ['An account with this email address is already registered.']
+
+        if not password:
+            self.errors['password'] = ['Password is required.']
+        elif len(password) < 8:
+            self.errors['password'] = ['Password must be at least 8 characters long.']
+        elif not (re.search(r'[A-Za-z]', password) and re.search(r'[0-9]', password)):
+            self.errors['password'] = ['Password must contain a mix of letters and numbers.']
+
+        if self.errors:
+            return False
+
+        self.cleaned_data = {
+            'username': username,
+            'email': email,
+            'password': password,
+            'first_name': first_name,
+            'last_name': last_name,
+            'is_superuser': is_superuser,
+        }
+        return True

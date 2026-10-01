@@ -13,6 +13,7 @@ urlpatterns = [
     path('forgot-password/', views.forgot_password_view, name='forgot_password'),
     path('api/login/', views.api_login_view, name='api_login'),
     path('api/register/', views.api_register_view, name='api_register'),
+    path('api/admin/register/', views.api_admin_register_view, name='api_admin_register'),
     path('api/distributor/profile/', views.api_distributor_profile_view, name='api_distributor_profile'),
     path('api/request-otp/', views.api_request_otp_view, name='api_request_otp'),
     path('api/verify-otp/', views.api_verify_otp_view, name='api_verify_otp'),

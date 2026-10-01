@@ -386,3 +386,60 @@ class DistributorProfileTests(TestCase):
         self.assertEqual(res_json['profile']['company_name'], 'Vance Enterprises')
 
 
+class AdminRegistrationApiTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.valid_payload = {
+            'username': 'admin_test_user',
+            'email': 'admin_test@advancebilling.com',
+            'password': 'SecureAdminPass123!',
+            'first_name': 'Sarah',
+            'last_name': 'Connor',
+            'is_superuser': False,
+        }
+
+    def test_api_admin_register_success(self):
+        response = self.client.post(
+            reverse('api_admin_register'),
+            data=json.dumps(self.valid_payload),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['user']['username'], 'admin_test_user')
+        self.assertTrue(data['user']['is_staff'])
+        self.assertFalse(data['user']['is_superuser'])
+
+        created_user = User.objects.get(username='admin_test_user')
+        self.assertTrue(created_user.is_staff)
+        self.assertTrue(created_user.check_password('SecureAdminPass123!'))
+
+    def test_api_admin_register_duplicate_username(self):
+        User.objects.create_user(username='admin_test_user', email='existing@admin.com', password='Pass1234Password')
+        response = self.client.post(
+            reverse('api_admin_register'),
+            data=json.dumps(self.valid_payload),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertEqual(data['status'], 'error')
+        self.assertIn('username', data['details'])
+
+    def test_api_admin_register_weak_password(self):
+        payload = self.valid_payload.copy()
+        payload['username'] = 'new_admin_user'
+        payload['email'] = 'new_admin@advancebilling.com'
+        payload['password'] = 'short'
+
+        response = self.client.post(
+            reverse('api_admin_register'),
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn('password', data['details'])
+
+
