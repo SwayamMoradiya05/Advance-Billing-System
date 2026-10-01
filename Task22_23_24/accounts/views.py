@@ -342,6 +342,12 @@ def forgot_password_view(request):
 def portal_hub_view(request):
     return render(request, 'accounts/portal_hub.html')
 
+def admin_register_view(request):
+    """Admin Governance Registration Form View"""
+    if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+        return redirect('dashboard')
+    return render(request, 'accounts/admin_register.html')
+
 @login_required
 def distributor_profile_view(request):
     """Distributor Profile View: Displays and updates distributor details."""

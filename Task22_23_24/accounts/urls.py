@@ -11,6 +11,7 @@ urlpatterns = [
     path('distributor-dashboard/', views.distributor_dashboard_view, name='distributor_dashboard'),
     path('distributor-profile/', views.distributor_profile_view, name='distributor_profile'),
     path('forgot-password/', views.forgot_password_view, name='forgot_password'),
+    path('admin-register/', views.admin_register_view, name='admin_register'),
     path('api/login/', views.api_login_view, name='api_login'),
     path('api/register/', views.api_register_view, name='api_register'),
     path('api/admin/register/', views.api_admin_register_view, name='api_admin_register'),

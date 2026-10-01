@@ -172,6 +172,16 @@
             background-color: #06b6d4;
             color: #0b0f19;
         }
+        .btn-outline-admin {
+            background-color: rgba(16, 185, 129, 0.10);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            margin-top: 0.75rem;
+        }
+        .btn-outline-admin:hover {
+            background-color: #10b981;
+            color: #0b0f19;
+        }
     </style>
 </head>
 {% load static %}
@@ -203,7 +213,8 @@
             </ul>
 
             <a href="{% url 'login' %}" class="btn btn-admin" style="margin-bottom: 0.75rem;">Admin Portal Login →</a>
-            <a href="{% url 'product_list' %}" class="btn" style="background-color: #3b82f6; color: #ffffff;">📦 Product Catalog & Stock →</a>
+            <a href="{% url 'admin_register' %}" class="btn btn-outline-admin">📝 Register Admin Account →</a>
+            <a href="{% url 'product_list' %}" class="btn" style="background-color: #3b82f6; color: #ffffff; margin-top: 0.75rem;">📦 Product Catalog & Stock →</a>
         </div>
 
         <!-- Distributor Portal Card -->
