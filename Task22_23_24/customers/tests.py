@@ -262,3 +262,157 @@ class CustomerApiTest(TestCase):
         self.assertEqual(self.customer.name, 'API Client Updated')
         self.assertEqual(self.customer.email, 'api.updated@client.com')
 
+
+User = get_user_model()
+
+
+class DistributorCustomerApiTest(TestCase):
+    """Tests for the distributor-scoped Customer registration API endpoints."""
+
+    def setUp(self):
+        self.client = Client()
+
+        # Create a Distributor user (non-staff)
+        self.distributor = User.objects.create_user(
+            username='dist_test_user',
+            email='dist@testdist.com',
+            password='DistPass123!',
+            is_staff=False,
+            is_superuser=False,
+        )
+
+        # Create an Admin/Staff user (should be blocked)
+        self.admin = User.objects.create_user(
+            username='admin_test_user2',
+            email='admin2@test.com',
+            password='AdminPass123!',
+            is_staff=True,
+        )
+
+        # Create a customer already linked to this distributor
+        self.existing_customer = Customer.objects.create(
+            name='Existing Dist Customer',
+            email='existing_dist@test.com',
+            phone='9876543210',
+            address='5 Dist Road',
+            distributor=self.distributor,
+        )
+
+        # A customer belonging to no distributor (should be invisible to this distributor)
+        self.other_customer = Customer.objects.create(
+            name='Other Customer',
+            email='other@test.com',
+            phone='1112223333',
+            address='99 Other Lane',
+        )
+
+        self.valid_payload = {
+            'name': 'New Dist Customer',
+            'email': 'new_dist_customer@test.com',
+            'phone': '5551234567',
+            'address': '12 Commerce St',
+            'city': 'Mumbai',
+            'state': 'Maharashtra',
+            'country': 'India',
+        }
+
+    # ---- GET (list own customers) ----
+
+    def test_distributor_can_list_own_customers(self):
+        self.client.login(username='dist_test_user', password='DistPass123!')
+        response = self.client.get(reverse('api_distributor_customer_list_create'))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['distributor'], 'dist_test_user')
+        # Only see own customer, not other_customer
+        codes = [c['customer_code'] for c in data['customers']]
+        self.assertIn(self.existing_customer.customer_code, codes)
+        self.assertNotIn(self.other_customer.customer_code, codes)
+
+    def test_unauthenticated_cannot_access_distributor_api(self):
+        response = self.client.get(reverse('api_distributor_customer_list_create'))
+        self.assertEqual(response.status_code, 302)  # login redirect
+
+    def test_admin_blocked_from_distributor_api(self):
+        self.client.login(username='admin_test_user2', password='AdminPass123!')
+        response = self.client.get(reverse('api_distributor_customer_list_create'))
+        self.assertEqual(response.status_code, 403)
+        data = response.json()
+        self.assertEqual(data['status'], 'error')
+
+    # ---- POST (register new customer) ----
+
+    def test_distributor_can_register_customer(self):
+        self.client.login(username='dist_test_user', password='DistPass123!')
+        response = self.client.post(
+            reverse('api_distributor_customer_list_create'),
+            data=json.dumps(self.valid_payload),
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['customer']['name'], 'New Dist Customer')
+        # Verify linked to distributor
+        created = Customer.objects.get(email='new_dist_customer@test.com')
+        self.assertEqual(created.distributor, self.distributor)
+
+    def test_distributor_register_customer_missing_fields(self):
+        self.client.login(username='dist_test_user', password='DistPass123!')
+        response = self.client.post(
+            reverse('api_distributor_customer_list_create'),
+            data=json.dumps({'name': 'No Email'}),
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn('email', data['errors'])
+
+    # ---- GET detail ----
+
+    def test_distributor_can_get_own_customer_detail(self):
+        self.client.login(username='dist_test_user', password='DistPass123!')
+        response = self.client.get(
+            reverse('api_distributor_customer_detail', kwargs={'pk': self.existing_customer.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['customer']['email'], 'existing_dist@test.com')
+
+    def test_distributor_cannot_get_other_customer(self):
+        self.client.login(username='dist_test_user', password='DistPass123!')
+        response = self.client.get(
+            reverse('api_distributor_customer_detail', kwargs={'pk': self.other_customer.pk})
+        )
+        self.assertEqual(response.status_code, 404)
+
+    # ---- PUT (update own customer) ----
+
+    def test_distributor_can_update_own_customer(self):
+        self.client.login(username='dist_test_user', password='DistPass123!')
+        payload = {
+            'name': 'Updated Dist Customer',
+            'email': 'existing_dist@test.com',
+            'phone': '9876543210',
+            'address': '5 Dist Road Updated',
+        }
+        response = self.client.put(
+            reverse('api_distributor_customer_detail', kwargs={'pk': self.existing_customer.pk}),
+            data=json.dumps(payload),
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 200)
+        self.existing_customer.refresh_from_db()
+        self.assertEqual(self.existing_customer.name, 'Updated Dist Customer')
+
+    # ---- DELETE ----
+
+    def test_distributor_can_delete_own_customer(self):
+        self.client.login(username='dist_test_user', password='DistPass123!')
+        response = self.client.delete(
+            reverse('api_distributor_customer_detail', kwargs={'pk': self.existing_customer.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Customer.objects.filter(pk=self.existing_customer.pk).exists())
+

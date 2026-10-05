@@ -312,3 +312,182 @@ def api_customer_detail(request, pk):
         }, status=200)
 
     return HttpResponseNotAllowed(['GET', 'PUT', 'DELETE'])
+
+
+# =============================================================================
+# DISTRIBUTOR-SPECIFIC CUSTOMER API ENDPOINTS
+# =============================================================================
+
+def _get_distributor_or_error(request):
+    """
+    Helper: ensure caller is an authenticated Distributor.
+    Returns (user, None) on success, (None, JsonResponse) on failure.
+    """
+    if not request.user.is_authenticated:
+        return None, JsonResponse(
+            {'status': 'error', 'error': 'Authentication required. Please sign in as a Distributor.'},
+            status=401
+        )
+    if request.user.is_staff or request.user.is_superuser:
+        return None, JsonResponse(
+            {'status': 'error', 'error': 'This endpoint is restricted to Distributor accounts only.'},
+            status=403
+        )
+    return request.user, None
+
+
+@csrf_exempt
+@login_required
+def api_distributor_customer_list_create(request):
+    """
+    Distributor-scoped Customer API.
+
+    GET  /customers/api/distributor/customers/
+        -> Returns only the customers registered by the calling distributor.
+
+    POST /customers/api/distributor/customers/
+        -> Creates a new customer linked to the calling distributor account.
+    """
+    distributor, error_response = _get_distributor_or_error(request)
+    if error_response:
+        return error_response
+
+    if request.method == 'GET':
+        customers_qs = Customer.objects.filter(distributor=distributor)
+
+        # Optional search filter
+        query = request.GET.get('q', '').strip()
+        if query:
+            customers_qs = customers_qs.filter(
+                Q(name__icontains=query) |
+                Q(email__icontains=query) |
+                Q(phone__icontains=query) |
+                Q(customer_code__icontains=query) |
+                Q(company_name__icontains=query)
+            )
+
+        # Optional active/inactive filter
+        status_filter = request.GET.get('status', '').strip()
+        if status_filter == 'active':
+            customers_qs = customers_qs.filter(is_active=True)
+        elif status_filter == 'inactive':
+            customers_qs = customers_qs.filter(is_active=False)
+
+        customers_qs = customers_qs.order_by('-created_at')
+        data = [CustomerSerializer.serialize(c) for c in customers_qs]
+        return JsonResponse({
+            'status': 'success',
+            'distributor': distributor.username,
+            'count': len(data),
+            'customers': data
+        }, status=200)
+
+    elif request.method == 'POST':
+        try:
+            body = json.loads(request.body.decode('utf-8'))
+        except Exception:
+            return JsonResponse(
+                {'status': 'error', 'error': 'Invalid JSON body in request payload.'},
+                status=400
+            )
+
+        errors = CustomerSerializer.validate_data(body)
+        if errors:
+            return JsonResponse({'status': 'error', 'errors': errors}, status=400)
+
+        customer = Customer(
+            name=body['name'].strip(),
+            email=body['email'].strip().lower(),
+            phone=body['phone'].strip(),
+            company_name=body.get('company_name', '').strip() or None,
+            address=body['address'].strip(),
+            city=body.get('city', '').strip(),
+            state=body.get('state', '').strip(),
+            postal_code=body.get('postal_code', '').strip(),
+            country=body.get('country', 'India').strip(),
+            tax_id=body.get('tax_id', '').strip() or None,
+            credit_limit=Decimal(str(body.get('credit_limit', '10000.00'))),
+            outstanding_balance=Decimal('0.00'),
+            is_active=True,
+            notes=body.get('notes', '').strip(),
+            distributor=distributor,  # Link to calling distributor account
+        )
+        customer.save()
+
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Customer registered successfully under distributor {distributor.username}.',
+            'customer': CustomerSerializer.serialize(customer)
+        }, status=201)
+
+    return HttpResponseNotAllowed(['GET', 'POST'])
+
+
+@csrf_exempt
+@login_required
+def api_distributor_customer_detail(request, pk):
+    """
+    Distributor-scoped Customer Detail API.
+
+    GET    /customers/api/distributor/customers/<pk>/  -> Fetch customer details (own only)
+    PUT    /customers/api/distributor/customers/<pk>/  -> Update customer (own only)
+    DELETE /customers/api/distributor/customers/<pk>/  -> Delete customer (own only)
+    """
+    distributor, error_response = _get_distributor_or_error(request)
+    if error_response:
+        return error_response
+
+    try:
+        customer = Customer.objects.get(pk=pk, distributor=distributor)
+    except Customer.DoesNotExist:
+        return JsonResponse(
+            {'status': 'error', 'error': f'Customer with ID {pk} not found or does not belong to your account.'},
+            status=404
+        )
+
+    if request.method == 'GET':
+        return JsonResponse({
+            'status': 'success',
+            'customer': CustomerSerializer.serialize(customer)
+        }, status=200)
+
+    elif request.method == 'PUT':
+        try:
+            body = json.loads(request.body.decode('utf-8'))
+        except Exception:
+            return JsonResponse({'status': 'error', 'error': 'Invalid JSON body.'}, status=400)
+
+        errors = CustomerSerializer.validate_data(body, instance=customer)
+        if errors:
+            return JsonResponse({'status': 'error', 'errors': errors}, status=400)
+
+        customer.name = body.get('name', customer.name).strip()
+        customer.email = body.get('email', customer.email).strip().lower()
+        customer.phone = body.get('phone', customer.phone).strip()
+        customer.company_name = body.get('company_name', customer.company_name or '').strip() or None
+        customer.address = body.get('address', customer.address).strip()
+        customer.city = body.get('city', customer.city).strip()
+        customer.state = body.get('state', customer.state).strip()
+        customer.postal_code = body.get('postal_code', customer.postal_code).strip()
+        customer.country = body.get('country', customer.country).strip()
+        customer.tax_id = body.get('tax_id', customer.tax_id or '').strip() or None
+        customer.notes = body.get('notes', customer.notes).strip()
+        if 'credit_limit' in body and body['credit_limit'] is not None:
+            customer.credit_limit = Decimal(str(body['credit_limit']))
+        customer.save()
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Customer updated successfully.',
+            'customer': CustomerSerializer.serialize(customer)
+        }, status=200)
+
+    elif request.method == 'DELETE':
+        code = customer.customer_code
+        customer.delete()
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Customer {code} deleted from your distributor account.'
+        }, status=200)
+
+    return HttpResponseNotAllowed(['GET', 'PUT', 'DELETE'])

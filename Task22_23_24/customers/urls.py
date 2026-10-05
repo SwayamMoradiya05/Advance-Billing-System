@@ -10,7 +10,11 @@ urlpatterns = [
     path('<int:pk>/delete/', views.customer_delete_view, name='customer_delete'),
     path('<int:pk>/toggle-status/', views.customer_toggle_status_view, name='customer_toggle_status'),
 
-    # REST API Routes
+    # General REST API Routes (Admin)
     path('api/customers/', views.api_customer_list_create, name='api_customer_list_create'),
     path('api/customers/<int:pk>/', views.api_customer_detail, name='api_customer_detail'),
+
+    # Distributor-Scoped Customer API Routes
+    path('api/distributor/customers/', views.api_distributor_customer_list_create, name='api_distributor_customer_list_create'),
+    path('api/distributor/customers/<int:pk>/', views.api_distributor_customer_detail, name='api_distributor_customer_detail'),
 ]
