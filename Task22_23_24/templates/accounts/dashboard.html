@@ -612,6 +612,281 @@
             border-color: #ef4444;
             background-color: #ef4444;
         }
+
+        /* =========================================================
+   REPORTS DASHBOARD CARD
+========================================================= */
+
+.reports-card {
+    background:
+        linear-gradient(
+            145deg,
+            #141923 0%,
+            #10141c 100%
+        );
+
+    border: 1px solid #303641;
+
+    border-radius: 12px;
+
+    padding: 22px;
+
+    min-height: 100%;
+
+    transition:
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.reports-card:hover {
+    border-color: #9c7b3f;
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.22);
+}
+
+
+/* HEADER */
+
+.reports-card-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 15px;
+
+    padding-bottom: 18px;
+
+    border-bottom: 1px solid #272c34;
+}
+
+
+.reports-title {
+    color: #d6b76a;
+
+    font-size: 17px;
+
+    font-weight: 750;
+
+    letter-spacing: -0.2px;
+}
+
+
+.reports-subtitle {
+    margin-top: 5px;
+
+    color: #777c82;
+
+    font-size: 11px;
+}
+
+
+/* OPEN BUTTON */
+
+.reports-open-btn {
+    display: inline-flex;
+
+    align-items: center;
+
+    white-space: nowrap;
+
+    text-decoration: none;
+
+    padding: 8px 13px;
+
+    border-radius: 7px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #c5a45c,
+            #96763b
+        );
+
+    color: #14120e;
+
+    font-size: 10px;
+
+    font-weight: 750;
+
+    transition: 0.2s ease;
+}
+
+.reports-open-btn:hover {
+    transform: translateY(-1px);
+
+    filter: brightness(1.08);
+
+    color: #14120e;
+}
+
+
+/* REPORT CONTENT */
+
+.reports-content {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 9px;
+
+    margin-top: 18px;
+}
+
+
+/* REPORT ITEM */
+
+.report-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 13px;
+
+    background: #0e1218;
+
+    border: 1px solid #242932;
+
+    border-radius: 8px;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.report-item:hover {
+    background: #171b22;
+
+    border-color: #3b3e43;
+}
+
+
+/* ICON */
+
+.report-icon {
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    font-weight: 800;
+}
+
+
+.revenue-icon {
+    background: rgba(194, 158, 82, 0.12);
+
+    color: #c7a45d;
+}
+
+
+.inventory-icon {
+    background: rgba(118, 145, 104, 0.12);
+
+    color: #91a879;
+}
+
+
+.customer-icon {
+    background: rgba(135, 113, 155, 0.12);
+
+    color: #b49acb;
+}
+
+
+.invoice-icon {
+    background: rgba(164, 111, 88, 0.12);
+
+    color: #c28b73;
+}
+
+
+/* TEXT */
+
+.report-label {
+    color: #dcd8ce;
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+
+.report-description {
+    color: #666b70;
+
+    font-size: 9px;
+
+    line-height: 1.4;
+
+    margin-top: 3px;
+}
+
+
+/* FOOTER */
+
+.reports-footer {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 16px;
+
+    padding-top: 13px;
+
+    border-top: 1px solid #252a31;
+
+    color: #5f6469;
+
+    font-size: 9px;
+}
+
+
+.reports-footer a {
+    color: #b99a58;
+
+    text-decoration: none;
+
+    font-weight: 650;
+}
+
+.reports-footer a:hover {
+    color: #d5b66b;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 800px) {
+
+    .reports-content {
+        grid-template-columns: 1fr;
+    }
+
+    .reports-card-header {
+        flex-direction: column;
+    }
+
+}
     </style>
 </head>
 {% load static %}
@@ -652,6 +927,7 @@
                     <a href="{% url 'customer_create' %}" class="dropdown-item">➕ Add New Customer</a>
                     <a href="#" class="dropdown-item" onclick="alert('QR Scanner active.'); return false;">📱 Test QR Scanner</a>
                     <a href="{% url 'logout' %}" class="dropdown-item danger">🚪 Log Out Admin Session</a>
+                    <a href="{% url 'reports' %}" class="dropdown-item">📊 Reports & Analytics</a>
                 </div>
             </div>
         </div>
@@ -767,6 +1043,133 @@
 
                 <button class="btn-generate" onclick="generateInvoice()">⚡ Generate Verified QR Invoice →</button>
             </div>
+           <!-- =========================================================
+     REPORTS SECTION
+========================================================= -->
+
+<div class="reports-card">
+
+    <div class="reports-card-header">
+
+        <div>
+            <div class="reports-title">
+                📊 Reports
+            </div>
+
+            <div class="reports-subtitle">
+                Business intelligence & performance overview
+            </div>
+        </div>
+
+        <a href="{% url 'reports' %}"
+           class="reports-open-btn">
+            Open Reports →
+        </a>
+
+    </div>
+
+
+    <div class="reports-content">
+
+        <div class="report-item">
+
+            <div class="report-icon revenue-icon">
+                ₹
+            </div>
+
+            <div class="report-info">
+
+                <div class="report-label">
+                    Revenue Analysis
+                </div>
+
+                <div class="report-description">
+                    View billing performance and revenue trends
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="report-item">
+
+            <div class="report-icon inventory-icon">
+                ◈
+            </div>
+
+            <div class="report-info">
+
+                <div class="report-label">
+                    Inventory Report
+                </div>
+
+                <div class="report-description">
+                    Monitor products, stock levels and inventory value
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="report-item">
+
+            <div class="report-icon customer-icon">
+                ◉
+            </div>
+
+            <div class="report-info">
+
+                <div class="report-label">
+                    Customer Report
+                </div>
+
+                <div class="report-description">
+                    Review customer activity and outstanding balances
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="report-item">
+
+            <div class="report-icon invoice-icon">
+                #
+            </div>
+
+            <div class="report-info">
+
+                <div class="report-label">
+                    Invoice Analytics
+                </div>
+
+                <div class="report-description">
+                    Analyze invoices, payments and pending amounts
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="reports-footer">
+
+        <span>
+            Centralized administrative reporting
+        </span>
+
+        <a href="{% url 'reports' %}">
+            View detailed analytics →
+        </a>
+
+    </div>
+
+</div>
 
             <!-- Right Card: Distributor Credit Lines & Status -->
             <div class="card">

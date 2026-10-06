@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Q
+from django.db.models import Q, Sum, Count
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -20,6 +20,14 @@ from .forms import (
 )
 from .models import OTPCode, DistributorProfile
 from .serializers import AdminRegistrationSerializer
+from products.models import Product
+from customers.models import Customer
+from invoices.models import Invoice, InvoiceItem
+from datetime import timedelta
+from decimal import Decimal
+
+from django.db import models
+from django.utils import timezone
 
 
 User = get_user_model()
@@ -987,4 +995,271 @@ def api_distributor_profile_view(request):
             ),
         },
         status=200
+    )
+# ============================================================
+# ADMIN REPORTS
+# ============================================================
+
+@login_required
+def reports_view(request):
+    """
+    Dedicated Admin Reports Section.
+
+    Uses existing Product, Customer, Invoice and InvoiceItem
+    data. No new database model is required.
+    """
+
+    # --------------------------------------------------------
+    # Admin-only access
+    # --------------------------------------------------------
+
+    if not (
+        request.user.is_staff
+        or request.user.is_superuser
+    ):
+        return redirect('distributor_dashboard')
+
+    # --------------------------------------------------------
+    # Date filter
+    # --------------------------------------------------------
+
+    period = request.GET.get('period', '30')
+
+    today = timezone.localdate()
+
+    if period == 'today':
+        start_date = today
+        period_label = "Today"
+
+    elif period == '7':
+        start_date = today - timedelta(days=6)
+        period_label = "Last 7 Days"
+
+    elif period == '30':
+        start_date = today - timedelta(days=29)
+        period_label = "Last 30 Days"
+
+    elif period == '90':
+        start_date = today - timedelta(days=89)
+        period_label = "Last 90 Days"
+
+    elif period == 'all':
+        start_date = None
+        period_label = "All Time"
+
+    else:
+        period = '30'
+        start_date = today - timedelta(days=29)
+        period_label = "Last 30 Days"
+
+    # --------------------------------------------------------
+    # Invoice queryset
+    # --------------------------------------------------------
+
+    invoices = Invoice.objects.all()
+
+    if start_date:
+        invoices = invoices.filter(
+            invoice_date__gte=start_date,
+            invoice_date__lte=today
+        )
+
+    # --------------------------------------------------------
+    # Invoice statistics
+    # --------------------------------------------------------
+
+    invoice_stats = invoices.aggregate(
+        total_revenue=Sum('grand_total'),
+        total_tax=Sum('tax_amount'),
+        total_paid=Sum('amount_paid'),
+        total_discount=Sum('discount_amount'),
+        invoice_count=Count('id'),
+    )
+
+    total_revenue = invoice_stats['total_revenue'] or Decimal('0.00')
+    total_tax = invoice_stats['total_tax'] or Decimal('0.00')
+    total_paid = invoice_stats['total_paid'] or Decimal('0.00')
+    total_discount = invoice_stats['total_discount'] or Decimal('0.00')
+    invoice_count = invoice_stats['invoice_count'] or 0
+
+    outstanding_amount = total_revenue - total_paid
+
+    # --------------------------------------------------------
+    # Invoice status report
+    # --------------------------------------------------------
+
+    status_report = []
+
+    status_choices = dict(Invoice.STATUS_CHOICES)
+
+    for status_code, status_name in Invoice.STATUS_CHOICES:
+
+        count = invoices.filter(
+            status=status_code
+        ).count()
+
+        status_report.append(
+            {
+                'code': status_code,
+                'name': status_name,
+                'count': count,
+            }
+        )
+
+    # --------------------------------------------------------
+    # Product statistics
+    # --------------------------------------------------------
+
+    products = Product.objects.all()
+
+    total_products = products.count()
+
+    active_products = products.filter(
+        is_active=True
+    ).count()
+
+    inactive_products = products.filter(
+        is_active=False
+    ).count()
+
+    low_stock_products = products.filter(
+        stock__gt=0,
+        stock__lte=models.F('min_stock_level')
+    ).count()
+
+    out_of_stock_products = products.filter(
+        stock__lte=0
+    ).count()
+
+    inventory_value = sum(
+        (
+            product.price * product.stock
+            for product in products
+        ),
+        Decimal('0.00')
+    )
+
+    # --------------------------------------------------------
+    # Customer statistics
+    # --------------------------------------------------------
+
+    total_customers = Customer.objects.count()
+
+    active_customers = Customer.objects.filter(
+        is_active=True
+    ).count()
+
+    inactive_customers = Customer.objects.filter(
+        is_active=False
+    ).count()
+
+    total_outstanding_customer_balance = (
+        Customer.objects.aggregate(
+            total=Sum('outstanding_balance')
+        )['total']
+        or Decimal('0.00')
+    )
+
+    # --------------------------------------------------------
+    # Top Products
+    # --------------------------------------------------------
+
+    top_products = (
+        InvoiceItem.objects
+        .filter(invoice__in=invoices)
+        .values(
+            'product__name',
+            'product__sku'
+        )
+        .annotate(
+            quantity_sold=Sum('quantity'),
+            sales_value=Sum('total_amount')
+        )
+        .order_by('-sales_value')[:5]
+    )
+
+    # --------------------------------------------------------
+    # Top Customers
+    # --------------------------------------------------------
+
+    top_customers = (
+        invoices
+        .values(
+            'customer__name',
+            'customer__company_name'
+        )
+        .annotate(
+            invoice_count=Count('id'),
+            total_value=Sum('grand_total')
+        )
+        .order_by('-total_value')[:5]
+    )
+
+    # --------------------------------------------------------
+    # Recent invoices
+    # --------------------------------------------------------
+
+    recent_invoices = invoices.select_related(
+        'customer'
+    ).order_by(
+        '-created_at'
+    )[:10]
+
+    # --------------------------------------------------------
+    # Low stock products
+    # --------------------------------------------------------
+
+    low_stock_list = (
+        products
+        .filter(
+            stock__lte=models.F('min_stock_level')
+        )
+        .order_by('stock')[:10]
+    )
+
+    # --------------------------------------------------------
+    # Context
+    # --------------------------------------------------------
+
+    context = {
+        'period': period,
+        'period_label': period_label,
+        'today': today,
+
+        # Invoice
+        'invoice_count': invoice_count,
+        'total_revenue': total_revenue,
+        'total_tax': total_tax,
+        'total_paid': total_paid,
+        'total_discount': total_discount,
+        'outstanding_amount': outstanding_amount,
+        'status_report': status_report,
+
+        # Products
+        'total_products': total_products,
+        'active_products': active_products,
+        'inactive_products': inactive_products,
+        'low_stock_products': low_stock_products,
+        'out_of_stock_products': out_of_stock_products,
+        'inventory_value': inventory_value,
+
+        # Customers
+        'total_customers': total_customers,
+        'active_customers': active_customers,
+        'inactive_customers': inactive_customers,
+        'total_outstanding_customer_balance': (
+            total_outstanding_customer_balance
+        ),
+
+        # Lists
+        'top_products': top_products,
+        'top_customers': top_customers,
+        'recent_invoices': recent_invoices,
+        'low_stock_list': low_stock_list,
+    }
+
+    return render(
+        request,
+        'accounts/reports.html',
+        context
     )

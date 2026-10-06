@@ -40,6 +40,12 @@ urlpatterns = [
         views.dashboard_view,
         name='dashboard'
     ),
+    
+    path(
+    'reports/',
+    views.reports_view,
+    name='reports'
+    ),
 
     # Password Recovery
     path(
