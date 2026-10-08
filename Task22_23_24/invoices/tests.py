@@ -323,3 +323,171 @@ class InvoiceFormAndAccessTestCase(TestCase):
         self.assertEqual(response['Content-Type'], 'application/pdf')
         self.assertIn(f'filename="Invoice_{invoice.invoice_number}.pdf"', response['Content-Disposition'])
         self.assertTrue(response.content.startswith(b'%PDF-'))
+
+
+class QRCodeDecoderTestCase(TestCase):
+    """
+    Test suite for OpenCV QR code decoding endpoint and frontend scanner integration.
+    """
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="scanner_user", password="password123", is_staff=True)
+        self.customer = Customer.objects.create(
+            name="Apex Trading Co.",
+            email="apex@trading.com",
+            phone="9123456780",
+            address="77 Market Road"
+        )
+        self.invoice = Invoice.objects.create(
+            customer=self.customer,
+            created_by=self.user,
+            grand_total=Decimal("4500.00"),
+            status="PAID"
+        )
+
+    def _generate_qr_file(self, payload_dict):
+        """Helper to create a PNG QR code in memory as an uploaded file."""
+        import json
+        import qrcode
+        from io import BytesIO
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        payload_str = json.dumps(payload_dict)
+        qr_img = qrcode.make(payload_str)
+        buf = BytesIO()
+        qr_img.save(buf, format="PNG")
+        buf.seek(0)
+
+        return SimpleUploadedFile("invoice_qr.png", buf.getvalue(), content_type="image/png")
+
+    def test_qr_decode_api_with_valid_invoice_file(self):
+        """Test POST /invoices/api/qr/decode/ with an uploaded image file matches invoice in DB."""
+        payload = {
+            'invoice': self.invoice.invoice_number,
+            'customer': self.customer.name,
+            'total': '4500.00',
+            'status': 'PAID',
+            'verified': True
+        }
+        qr_file = self._generate_qr_file(payload)
+
+        url = reverse('api_qr_decode')
+        response = self.client.post(url, {'file': qr_file})
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.assertIn('raw_data', data)
+        self.assertEqual(data['parsed_data']['invoice_number'], self.invoice.invoice_number)
+        self.assertIsNotNone(data['matched_invoice'])
+        self.assertEqual(data['matched_invoice']['invoice_number'], self.invoice.invoice_number)
+        self.assertTrue(data['is_authentic'])
+        self.assertIn(f"/invoices/{self.invoice.id}/", data['detail_url'])
+
+    def test_qr_decode_api_with_base64_json_payload(self):
+        """Test POST /invoices/api/qr/decode/ with Base64 JSON payload."""
+        import base64
+        import json
+        import qrcode
+        from io import BytesIO
+
+        payload = {
+            'invoice': self.invoice.invoice_number,
+            'customer': self.customer.name,
+            'total': '4500.00'
+        }
+        qr_img = qrcode.make(json.dumps(payload))
+        buf = BytesIO()
+        qr_img.save(buf, format="PNG")
+        b64_data = f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode('utf-8')}"
+
+        url = reverse('api_qr_decode')
+        response = self.client.post(url, data=json.dumps({'image_base64': b64_data}), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.assertEqual(data['parsed_data']['invoice_number'], self.invoice.invoice_number)
+
+    def test_qr_decode_api_no_qr_in_image(self):
+        """Test POST /invoices/api/qr/decode/ with blank image returns 400."""
+        from io import BytesIO
+        from PIL import Image
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        # Create a plain white 200x200 image without QR
+        img = Image.new('RGB', (200, 200), color='white')
+        buf = BytesIO()
+        img.save(buf, format='PNG')
+        buf.seek(0)
+        blank_file = SimpleUploadedFile("blank.png", buf.getvalue(), content_type="image/png")
+
+        url = reverse('api_qr_decode')
+        response = self.client.post(url, {'file': blank_file})
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertFalse(data['success'])
+        self.assertIn("No QR code detected", data['error'])
+
+    def test_qr_decode_api_empty_request(self):
+        """Test POST /invoices/api/qr/decode/ with no payload returns 400."""
+        url = reverse('api_qr_decode')
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertFalse(data['success'])
+
+    def test_qr_scanner_view_renders_template(self):
+        """Test GET /invoices/qr-scanner/ renders correctly for authenticated users."""
+        url = reverse('qr_scanner')
+        self.client.login(username="scanner_user", password="password123")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'invoices/qr_scanner.html')
+
+
+class InvoiceDateValidationTestCase(TestCase):
+    """
+    Test suite for date and date-range validation in forms, models, and serializers.
+    """
+
+    def setUp(self):
+        self.customer = Customer.objects.create(
+            name="Date Test Corp",
+            email="date@test.com",
+            phone="9000000000",
+            address="100 Time Way"
+        )
+
+    def test_serializer_rejects_due_date_earlier_than_invoice_date(self):
+        """InvoiceSerializer rejects payload when due_date < invoice_date."""
+        payload = {
+            'customer_id': self.customer.id,
+            'invoice_date': '2026-10-15',
+            'due_date': '2026-10-10',  # 5 days earlier
+        }
+        errors = InvoiceSerializer.validate_data(payload)
+        self.assertIn('due_date', errors)
+        self.assertEqual(errors['due_date'], "Payment due date cannot be earlier than invoice date.")
+
+    def test_serializer_accepts_valid_date_range(self):
+        """InvoiceSerializer accepts payload when due_date >= invoice_date."""
+        payload = {
+            'customer_id': self.customer.id,
+            'invoice_date': '2026-10-10',
+            'due_date': '2026-10-25',
+        }
+        errors = InvoiceSerializer.validate_data(payload)
+        self.assertNotIn('due_date', errors)
+        self.assertNotIn('invoice_date', errors)
+
+    def test_serializer_rejects_malformed_date(self):
+        """InvoiceSerializer rejects invalid date strings."""
+        payload = {
+            'customer_id': self.customer.id,
+            'invoice_date': 'not-a-date',
+            'due_date': '2026-13-45',
+        }
+        errors = InvoiceSerializer.validate_data(payload)
+        self.assertIn('invoice_date', errors)
+        self.assertIn('due_date', errors)

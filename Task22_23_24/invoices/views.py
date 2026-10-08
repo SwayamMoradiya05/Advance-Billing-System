@@ -15,10 +15,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q, Sum
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+from django.urls import reverse
 from .models import Invoice, InvoiceItem
 from .forms import InvoiceForm, InvoiceItemFormSet
 from .serializers import InvoiceSerializer, InvoiceItemSerializer
-from .utils import render_to_pdf
+from .utils import render_to_pdf, decode_qr_image
 from customers.models import Customer
 from products.models import Product
 
@@ -385,3 +386,123 @@ def api_invoice_detail(request, pk):
     if request.method == 'GET':
         return JsonResponse({'success': True, 'invoice': InvoiceSerializer.serialize(invoice)})
     return HttpResponseNotAllowed(['GET'])
+
+
+@login_required
+def qr_scanner_view(request):
+    """
+    Interactive QR Scanner & Intake Hub view with live camera feed,
+    drag-and-drop file upload, and instant verification results.
+    """
+    return render(request, 'invoices/qr_scanner.html', {
+        'can_create': is_admin_or_distributor(request.user),
+    })
+
+
+@csrf_exempt
+def api_qr_decode_view(request):
+    """
+    REST API endpoint for decoding uploaded QR code images using OpenCV.
+    Accepts:
+      - Multipart form-data with file ('file', 'image', 'qr_image')
+      - JSON body with Base64 image ('image_base64' or 'image')
+
+    Returns decoded QR data and automatically matches against the database to
+    provide full invoice records and authenticity status.
+    """
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    image_bytes = None
+
+    # Option A: Multipart File Upload
+    uploaded_file = (
+        request.FILES.get('file') or
+        request.FILES.get('image') or
+        request.FILES.get('qr_image')
+    )
+
+    if uploaded_file:
+        # File size check (max 10MB)
+        if uploaded_file.size > 10 * 1024 * 1024:
+            return JsonResponse({
+                'success': False,
+                'error': 'Uploaded file exceeds the maximum 10MB size limit.'
+            }, status=400)
+
+        image_bytes = uploaded_file.read()
+
+    # Option B: Base64 in JSON or POST form data
+    elif 'application/json' in (request.content_type or ''):
+        try:
+            body = json.loads(request.body.decode('utf-8'))
+            base64_str = body.get('image_base64') or body.get('image') or body.get('data')
+            if base64_str:
+                # Strip data URL header if present (e.g. data:image/png;base64,...)
+                if ',' in base64_str:
+                    base64_str = base64_str.split(',', 1)[1]
+                image_bytes = base64.b64decode(base64_str)
+        except Exception:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid JSON or malformed Base64 image payload.'
+            }, status=400)
+    elif request.POST.get('image_base64'):
+        try:
+            base64_str = request.POST.get('image_base64')
+            if ',' in base64_str:
+                base64_str = base64_str.split(',', 1)[1]
+            image_bytes = base64.b64decode(base64_str)
+        except Exception:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid Base64 image payload in form data.'
+            }, status=400)
+
+    if not image_bytes:
+        return JsonResponse({
+            'success': False,
+            'error': 'No image file or Base64 data provided. Please upload a QR code image.'
+        }, status=400)
+
+    # Decode QR Code using OpenCV
+    decode_result = decode_qr_image(image_bytes)
+
+    if not decode_result['success']:
+        return JsonResponse({
+            'success': False,
+            'error': decode_result['error']
+        }, status=400)
+
+    parsed_data = decode_result['parsed_data'] or {}
+    invoice_num = parsed_data.get('invoice_number')
+
+    matched_invoice = None
+    detail_url = None
+    pdf_url = None
+    is_authentic = False
+
+    if invoice_num:
+        inv = Invoice.objects.filter(invoice_number__iexact=invoice_num).select_related('customer', 'created_by').prefetch_related('items__product').first()
+        if inv:
+            matched_invoice = InvoiceSerializer.serialize(inv)
+            detail_url = reverse('invoice_detail', args=[inv.pk])
+            pdf_url = reverse('invoice_pdf', args=[inv.pk])
+
+            # Authenticity check: verify grand total matches
+            qr_total = parsed_data.get('total')
+            if qr_total and str(inv.grand_total) == str(qr_total):
+                is_authentic = True
+            elif not qr_total:
+                is_authentic = True
+
+    return JsonResponse({
+        'success': True,
+        'message': 'QR code decoded successfully.',
+        'raw_data': decode_result['raw_data'],
+        'parsed_data': parsed_data,
+        'matched_invoice': matched_invoice,
+        'is_authentic': is_authentic,
+        'detail_url': detail_url,
+        'pdf_url': pdf_url,
+    }, status=200)

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Invoice Scanner & Verification | Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% load static %}
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #111827;
+            --border-color: #1f293d;
+            --primary-accent: #10b981;
+            --primary-hover: #059669;
+            --text-primary: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-blue: #3b82f6;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 4rem;
+        }
+
+        .navbar {
+            background-color: #111827;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.85rem 2rem;
+        }
+
+        .card-custom {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        .drop-zone {
+            border: 2px dashed #374151;
+            border-radius: 12px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            background-color: #131b2e;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--primary-accent);
+            background-color: rgba(16, 185, 129, 0.05);
+        }
+
+        .drop-zone-icon {
+            font-size: 3rem;
+            color: var(--primary-accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .camera-container {
+            position: relative;
+            background-color: #000000;
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+            max-height: 400px;
+        }
+
+        .camera-video {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: cover;
+        }
+
+        .scan-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 220px;
+            height: 220px;
+            border: 2px solid var(--primary-accent);
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: var(--primary-accent);
+            box-shadow: 0 0 8px var(--primary-accent);
+            animation: scan 2s infinite ease-in-out;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+
+        .btn-emerald {
+            background-color: var(--primary-accent);
+            color: #0b0f19;
+            font-weight: 700;
+            border: none;
+            padding: 0.65rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-emerald:hover {
+            background-color: var(--primary-hover);
+            color: #ffffff;
+        }
+
+        .result-card {
+            background-color: #151d30;
+            border: 1px solid #28354f;
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: none;
+        }
+
+        .badge-verified {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--primary-accent);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .preview-thumbnail {
+            max-width: 160px;
+            max-height: 160px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% if user.is_staff or user.is_superuser %}{% url 'dashboard' %}{% else %}{% url 'distributor_dashboard' %}{% endif %}">
+                <img src="{% static 'images/company_logo.jpg' %}" alt="Advance Billing System Logo" style="height: 38px; border-radius: 6px; object-fit: contain;">
+                <span class="fw-bold">Advance Billing System</span>
+            </a>
+            <div class="d-flex gap-3 align-items-center">
+                {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">📊 Admin Dashboard</a>
+                {% else %}
+                    <a href="{% url 'distributor_dashboard' %}" class="btn btn-outline-info btn-sm">🚚 Distributor Portal</a>
+                {% endif %}
+                <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary btn-sm">Invoices</a>
+                <a href="{% url 'qr_scanner' %}" class="btn btn-emerald btn-sm text-dark active">📷 QR Scanner</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 900px;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-white mb-1">📷 QR Code Decoder & Invoice Verification</h2>
+                <p class="text-secondary mb-0">Upload or scan invoice QR codes to verify authenticity, intake stock, and view transaction records.</p>
+            </div>
+            <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary btn-sm">← Back to Invoices</a>
+        </div>
+
+        <div class="card-custom mb-4">
+            <!-- Mode Selector Tabs -->
+            <div class="d-flex gap-2 mb-4 border-bottom border-secondary pb-3">
+                <button type="button" id="tabUpload" class="btn btn-sm btn-emerald">📁 Upload QR Image</button>
+                <button type="button" id="tabCamera" class="btn btn-sm btn-outline-secondary">📹 Live Camera Scan</button>
+            </div>
+
+            <!-- UPLOAD MODE -->
+            <div id="uploadSection">
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-zone-icon">📥</div>
+                    <h5 class="fw-bold text-white mb-1">Drag & Drop Invoice QR Code Image Here</h5>
+                    <p class="text-muted small mb-3">Supports PNG, JPG, JPEG, WEBP (Max: 10MB)</p>
+                    <label for="qrFileInput" class="btn btn-emerald btn-sm px-4">
+                        Choose Image File
+                    </label>
+                    <input type="file" id="qrFileInput" accept="image/*" style="display: none;">
+                </div>
+
+                <!-- Client-Side Validation Error Box -->
+                <div id="uploadError" class="alert alert-danger mt-3" style="display: none;"></div>
+            </div>
+
+            <!-- LIVE CAMERA MODE -->
+            <div id="cameraSection" style="display: none;">
+                <div class="camera-container" id="cameraContainer">
+                    <video id="cameraVideo" class="camera-video" playsinline></video>
+                    <div class="scan-overlay">
+                        <div class="scan-line"></div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center gap-3 mt-3">
+                    <button type="button" id="btnCaptureFrame" class="btn btn-emerald btn-sm px-4">📸 Capture & Decode</button>
+                    <button type="button" id="btnStopCamera" class="btn btn-outline-danger btn-sm px-3">Stop Camera</button>
+                </div>
+                <canvas id="captureCanvas" style="display: none;"></canvas>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingBox" class="text-center py-4" style="display: none;">
+                <div class="spinner-border text-emerald" style="color: #10b981; width: 3rem; height: 3rem;" role="status"></div>
+                <div class="text-muted mt-2 fw-semibold">Decoding QR Code with OpenCV...</div>
+            </div>
+        </div>
+
+        <!-- DECODED RESULTS SECTION -->
+        <div id="resultCard" class="result-card">
+            <div class="d-flex justify-content-between align-items-start mb-3 border-bottom border-secondary pb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <img id="resultThumb" class="preview-thumbnail" src="" alt="Decoded QR Preview" style="display: none;">
+                    <div>
+                        <span id="verifiedBadge" class="badge-verified mb-1">
+                            <span>✓</span> Authenticated QR Code
+                        </span>
+                        <h4 id="resultInvoiceTitle" class="fw-bold text-white mb-0 mt-1">Invoice ---</h4>
+                        <small id="resultCustomer" class="text-secondary">Customer: ---</small>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div id="resultTotal" class="h4 fw-bold text-emerald mb-0" style="color: #10b981;">₹0.00</div>
+                    <span id="resultStatus" class="badge bg-secondary mt-1">STATUS</span>
+                </div>
+            </div>
+
+            <!-- Details Grid -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="text-muted small">Invoice Date</div>
+                    <div id="resultDate" class="fw-semibold text-light">---</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Payment Due Date</div>
+                    <div id="resultDueDate" class="fw-semibold text-light">---</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Items Count</div>
+                    <div id="resultItemsCount" class="fw-semibold text-light">---</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Subtotal / Tax</div>
+                    <div id="resultTaxSub" class="fw-semibold text-light">---</div>
+                </div>
+                <div class="col-12" id="verificationHashContainer" style="display: none;">
+                    <div class="text-muted small">Verification Hash Ledger</div>
+                    <code id="resultHash" class="text-emerald small" style="color: #34d399; word-break: break-all;">---</code>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2 flex-wrap">
+                <a id="btnViewDetail" href="#" class="btn btn-emerald btn-sm px-3" style="display: none;">
+                    📄 View Full Invoice Record →
+                </a>
+                <a id="btnDownloadPdf" href="#" class="btn btn-outline-info btn-sm px-3" style="display: none;">
+                    ⬇️ Download Invoice PDF
+                </a>
+                <button type="button" id="btnCopyRaw" class="btn btn-outline-secondary btn-sm px-3">
+                    📋 Copy Raw QR Text
+                </button>
+                <button type="button" id="btnScanAnother" class="btn btn-outline-secondary btn-sm px-3 ms-auto">
+                    🔄 Scan Another
+                </button>
+            </div>
+
+            <!-- Raw Payload Collapsible -->
+            <div class="mt-3">
+                <details>
+                    <summary class="text-muted small" style="cursor: pointer;">View Raw QR Code Payload</summary>
+                    <pre id="rawPayloadText" class="bg-dark text-light p-3 rounded mt-2 small" style="border: 1px solid #28354f;"></pre>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scanner Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('qrFileInput');
+            const uploadError = document.getElementById('uploadError');
+            const loadingBox = document.getElementById('loadingBox');
+            const resultCard = document.getElementById('resultCard');
+
+            const tabUpload = document.getElementById('tabUpload');
+            const tabCamera = document.getElementById('tabCamera');
+            const uploadSection = document.getElementById('uploadSection');
+            const cameraSection = document.getElementById('cameraSection');
+            const cameraContainer = document.getElementById('cameraContainer');
+            const cameraVideo = document.getElementById('cameraVideo');
+            const captureCanvas = document.getElementById('captureCanvas');
+            const btnCaptureFrame = document.getElementById('btnCaptureFrame');
+            const btnStopCamera = document.getElementById('btnStopCamera');
+            const btnScanAnother = document.getElementById('btnScanAnother');
+            const btnCopyRaw = document.getElementById('btnCopyRaw');
+
+            let mediaStream = null;
+            let currentRawData = '';
+
+            // -------------------------------------------------------------
+            // 1. TAB SWITCHING
+            // -------------------------------------------------------------
+            tabUpload.addEventListener('click', function() {
+                tabUpload.className = 'btn btn-sm btn-emerald';
+                tabCamera.className = 'btn btn-sm btn-outline-secondary';
+                uploadSection.style.display = 'block';
+                cameraSection.style.display = 'none';
+                stopCamera();
+            });
+
+            tabCamera.addEventListener('click', function() {
+                tabCamera.className = 'btn btn-sm btn-emerald';
+                tabUpload.className = 'btn btn-sm btn-outline-secondary';
+                uploadSection.style.display = 'none';
+                cameraSection.style.display = 'block';
+                startCamera();
+            });
+
+            // -------------------------------------------------------------
+            // 2. CAMERA CONTROLS
+            // -------------------------------------------------------------
+            async function startCamera() {
+                hideError();
+                try {
+                    mediaStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'environment' }
+                    });
+                    cameraVideo.srcObject = mediaStream;
+                    await cameraVideo.play();
+                    cameraContainer.style.display = 'block';
+                } catch (err) {
+                    showError('Camera access denied or unavailable: ' + err.message + '. Please use the Image Upload option.');
+                }
+            }
+
+            function stopCamera() {
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    mediaStream = null;
+                }
+                cameraContainer.style.display = 'none';
+            }
+
+            btnStopCamera.addEventListener('click', stopCamera);
+
+            btnCaptureFrame.addEventListener('click', function() {
+                if (!mediaStream) return;
+                const canvas = captureCanvas;
+                canvas.width = cameraVideo.videoWidth || 640;
+                canvas.height = cameraVideo.videoHeight || 480;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                uploadBase64Image(dataUrl);
+            });
+
+            // -------------------------------------------------------------
+            // 3. FILE DRAG & DROP AND SELECTION (Client-Side Validation)
+            // -------------------------------------------------------------
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleFileSelection(e.dataTransfer.files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files.length > 0) {
+                    handleFileSelection(this.files[0]);
+                }
+            });
+
+            function handleFileSelection(file) {
+                hideError();
+
+                // Validation 1: Check File Type
+                const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif', 'image/bmp'];
+                if (!validTypes.includes(file.type.toLowerCase()) && !file.name.match(/\.(png|jpe?g|webp|gif|bmp)$/i)) {
+                    showError('Invalid file type. Please upload a valid image file (PNG, JPG, JPEG, WEBP).');
+                    return;
+                }
+
+                // Validation 2: Check File Size (Max 10MB)
+                const maxSize = 10 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    showError('File is too large (' + (file.size / (1024 * 1024)).toFixed(2) + 'MB). Maximum allowed size is 10MB.');
+                    return;
+                }
+
+                // Show client-side thumbnail preview & upload
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadFileToServer(file, e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // -------------------------------------------------------------
+            // 4. API UPLOAD & OPENCV DECODE
+            // -------------------------------------------------------------
+            async function uploadFileToServer(file, dataUrl) {
+                showLoading(true);
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch('{% url "api_qr_decode" %}', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    handleDecodeResponse(result, dataUrl);
+                } catch (err) {
+                    showError('Network error while communicating with the QR decoding endpoint: ' + err.message);
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            async function uploadBase64Image(dataUrl) {
+                showLoading(true);
+                try {
+                    const response = await fetch('{% url "api_qr_decode" %}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image_base64: dataUrl })
+                    });
+                    const result = await response.json();
+                    handleDecodeResponse(result, dataUrl);
+                } catch (err) {
+                    showError('Network error during QR decoding: ' + err.message);
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            function handleDecodeResponse(result, previewUrl) {
+                if (!result.success) {
+                    showError(result.error || 'Failed to decode QR code. Please try another image.');
+                    resultCard.style.display = 'none';
+                    return;
+                }
+
+                currentRawData = result.raw_data || '';
+                const parsed = result.parsed_data || {};
+                const matched = result.matched_invoice;
+
+                // Populate UI
+                const thumb = document.getElementById('resultThumb');
+                if (previewUrl) {
+                    thumb.src = previewUrl;
+                    thumb.style.display = 'block';
+                } else {
+                    thumb.style.display = 'none';
+                }
+
+                const invoiceNum = parsed.invoice_number || (matched ? matched.invoice_number : 'Unknown');
+                document.getElementById('resultInvoiceTitle').textContent = 'Invoice: ' + invoiceNum;
+                document.getElementById('resultCustomer').textContent = 'Customer: ' + (parsed.customer_name || (matched ? matched.customer_name : 'N/A'));
+
+                const totalVal = parsed.total || (matched ? matched.grand_total : '0.00');
+                document.getElementById('resultTotal').textContent = '₹' + parseFloat(totalVal).toLocaleString('en-IN', {minimumFractionDigits: 2});
+
+                const statusEl = document.getElementById('resultStatus');
+                const statusVal = parsed.status || (matched ? matched.status : 'VERIFIED');
+                statusEl.textContent = statusVal;
+                statusEl.className = 'badge ' + (statusVal === 'PAID' ? 'bg-success' : 'bg-warning text-dark');
+
+                document.getElementById('resultDate').textContent = parsed.invoice_date || (matched ? matched.invoice_date : 'N/A');
+                document.getElementById('resultDueDate').textContent = parsed.due_date || (matched ? matched.due_date : 'N/A');
+                document.getElementById('resultItemsCount').textContent = (parsed.items_count !== undefined ? parsed.items_count : (matched ? matched.total_items_count : 'N/A')) + ' item(s)';
+                document.getElementById('resultTaxSub').textContent = 'Sub: ₹' + (parsed.subtotal || '0') + ' | Tax: ₹' + (parsed.tax || '0');
+
+                if (parsed.hash) {
+                    document.getElementById('verificationHashContainer').style.display = 'block';
+                    document.getElementById('resultHash').textContent = parsed.hash;
+                } else {
+                    document.getElementById('verificationHashContainer').style.display = 'none';
+                }
+
+                // Action links
+                const btnDetail = document.getElementById('btnViewDetail');
+                const btnPdf = document.getElementById('btnDownloadPdf');
+                if (result.detail_url) {
+                    btnDetail.href = result.detail_url;
+                    btnDetail.style.display = 'inline-block';
+                } else {
+                    btnDetail.style.display = 'none';
+                }
+
+                if (result.pdf_url) {
+                    btnPdf.href = result.pdf_url;
+                    btnPdf.style.display = 'inline-block';
+                } else {
+                    btnPdf.style.display = 'none';
+                }
+
+                // Raw JSON
+                document.getElementById('rawPayloadText').textContent = JSON.stringify(result.raw_data, null, 2);
+
+                resultCard.style.display = 'block';
+                resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // -------------------------------------------------------------
+            // 5. HELPER ACTIONS
+            // -------------------------------------------------------------
+            btnCopyRaw.addEventListener('click', function() {
+                if (currentRawData) {
+                    navigator.clipboard.writeText(typeof currentRawData === 'object' ? JSON.stringify(currentRawData) : currentRawData);
+                    const originalText = btnCopyRaw.textContent;
+                    btnCopyRaw.textContent = '✅ Copied!';
+                    setTimeout(() => btnCopyRaw.textContent = originalText, 2000);
+                }
+            });
+
+            btnScanAnother.addEventListener('click', function() {
+                resultCard.style.display = 'none';
+                hideError();
+                fileInput.value = '';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            function showLoading(show) {
+                loadingBox.style.display = show ? 'block' : 'none';
+            }
+
+            function showError(msg) {
+                uploadError.textContent = msg;
+                uploadError.style.display = 'block';
+            }
+
+            function hideError() {
+                uploadError.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

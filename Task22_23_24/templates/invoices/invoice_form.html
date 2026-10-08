@@ -202,6 +202,7 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-light">Invoice Date *</label>
                                 {{ form.invoice_date }}
+                                <div id="invoice-date-feedback" class="invalid-feedback" style="display: none; color: #ef4444; font-size: 0.8rem; margin-top: 4px;"></div>
                                 {% if form.invoice_date.errors %}
                                     <div class="text-danger small mt-1">{{ form.invoice_date.errors.0 }}</div>
                                 {% endif %}
@@ -209,6 +210,7 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-light">Payment Due Date</label>
                                 {{ form.due_date }}
+                                <div id="due-date-feedback" class="invalid-feedback" style="display: none; color: #ef4444; font-size: 0.8rem; margin-top: 4px;"></div>
                                 {% if form.due_date.errors %}
                                     <div class="text-danger small mt-1">{{ form.due_date.errors.0 }}</div>
                                 {% endif %}
@@ -674,6 +676,93 @@
             // Initial Calculations on Page Load for existing rows
             const initialRows = itemsTableBody.querySelectorAll('.item-row');
             initialRows.forEach(row => calculateRow(row));
+
+            // -----------------------------------------------------------------
+            // 5. CLIENT-SIDE LIVE DATE VALIDATION & RANGE ENFORCEMENT
+            // -----------------------------------------------------------------
+            const invoiceDateInput = document.getElementById('id_invoice_date');
+            const dueDateInput = document.getElementById('id_due_date');
+            const invoiceDateFeedback = document.getElementById('invoice-date-feedback');
+            const dueDateFeedback = document.getElementById('due-date-feedback');
+            const invoiceForm = document.getElementById('invoice-form');
+
+            function validateDates() {
+                let isValid = true;
+                const invDateVal = invoiceDateInput ? invoiceDateInput.value.trim() : '';
+                const dueDateVal = dueDateInput ? dueDateInput.value.trim() : '';
+
+                // 1. Validate Invoice Date (Cannot be empty)
+                if (invoiceDateInput) {
+                    if (!invDateVal) {
+                        invoiceDateInput.classList.add('is-invalid');
+                        invoiceDateFeedback.textContent = 'Invoice issue date is required.';
+                        invoiceDateFeedback.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        invoiceDateInput.classList.remove('is-invalid');
+                        invoiceDateFeedback.style.display = 'none';
+
+                        // Dynamically update min attribute of due_date
+                        if (dueDateInput) {
+                            dueDateInput.min = invDateVal;
+                        }
+                    }
+                }
+
+                // 2. Validate Due Date (Cannot be earlier than Invoice Date)
+                if (dueDateInput && dueDateVal && invDateVal) {
+                    const invDate = new Date(invDateVal);
+                    const dueDate = new Date(dueDateVal);
+
+                    if (dueDate < invDate) {
+                        dueDateInput.classList.add('is-invalid');
+                        dueDateFeedback.textContent = 'Payment due date cannot be earlier than invoice issue date (' + invDateVal + ').';
+                        dueDateFeedback.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        dueDateInput.classList.remove('is-invalid');
+                        dueDateFeedback.style.display = 'none';
+                    }
+                } else if (dueDateInput && !dueDateVal) {
+                    // Due date is optional
+                    dueDateInput.classList.remove('is-invalid');
+                    dueDateFeedback.style.display = 'none';
+                }
+
+                return isValid;
+            }
+
+            if (invoiceDateInput) {
+                invoiceDateInput.addEventListener('input', validateDates);
+                invoiceDateInput.addEventListener('change', validateDates);
+            }
+
+            if (dueDateInput) {
+                dueDateInput.addEventListener('input', validateDates);
+                dueDateInput.addEventListener('change', validateDates);
+            }
+
+            // Run initial date check
+            validateDates();
+
+            // Intercept form submission
+            if (invoiceForm) {
+                invoiceForm.addEventListener('submit', function(e) {
+                    if (!validateDates()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        // Scroll to date section
+                        if (invoiceDateInput && invoiceDateInput.classList.contains('is-invalid')) {
+                            invoiceDateInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            invoiceDateInput.focus();
+                        } else if (dueDateInput && dueDateInput.classList.contains('is-invalid')) {
+                            dueDateInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            dueDateInput.focus();
+                        }
+                    }
+                });
+            }
         });
     </script>
 </body>

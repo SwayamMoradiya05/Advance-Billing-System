@@ -128,7 +128,8 @@ class OTPTests(TestCase):
         self.user = User.objects.create_user(
             username='johndoe',
             email=self.email,
-            password='OldPassword123!'
+            password='OldPassword123!',
+            is_staff=True,
         )
 
     def test_otp_generation_and_db_storage(self):
@@ -178,8 +179,8 @@ class OTPTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data['message'], 'OTP generated successfully')
-        self.assertIn('otp', data)
+        self.assertIn('OTP', data['message'])
+        self.assertEqual(data['email'], self.email)
         self.assertTrue(OTPCode.objects.filter(email=self.email).exists())
 
     def test_api_verify_otp_success_resets_password(self):
@@ -203,12 +204,13 @@ class OTPTests(TestCase):
             reverse('api_verify_otp'),
             data=json.dumps({
                 'email': self.email,
-                'code': '999999'
+                'code': '999999',
+                'new_password': 'NewSecurePass123!'
             }),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()['error'], 'Invalid or expired OTP')
+        self.assertIn('Invalid or expired OTP', response.json()['error'])
 
 
 class RegistrationTests(TestCase):

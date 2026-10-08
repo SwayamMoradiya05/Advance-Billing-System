@@ -137,4 +137,32 @@ class InvoiceSerializer:
             except Exception:
                 errors['amount_paid'] = "Invalid amount paid format."
 
+        # Date and Date Range Validation
+        invoice_date_obj = None
+        due_date_obj = None
+
+        if 'invoice_date' in data and data['invoice_date']:
+            try:
+                from datetime import datetime
+                val = str(data['invoice_date']).strip()
+                invoice_date_obj = datetime.strptime(val[:10], '%Y-%m-%d').date()
+            except (ValueError, TypeError):
+                errors['invoice_date'] = "Invalid invoice date format. Use YYYY-MM-DD."
+
+        if 'due_date' in data and data['due_date']:
+            try:
+                from datetime import datetime
+                val = str(data['due_date']).strip()
+                due_date_obj = datetime.strptime(val[:10], '%Y-%m-%d').date()
+            except (ValueError, TypeError):
+                errors['due_date'] = "Invalid due date format. Use YYYY-MM-DD."
+
+        # Range verification: due_date cannot be earlier than invoice_date
+        if invoice_date_obj and due_date_obj:
+            if due_date_obj < invoice_date_obj:
+                errors['due_date'] = "Payment due date cannot be earlier than invoice date."
+        elif instance and due_date_obj and instance.invoice_date:
+            if due_date_obj < instance.invoice_date:
+                errors['due_date'] = "Payment due date cannot be earlier than invoice date."
+
         return errors

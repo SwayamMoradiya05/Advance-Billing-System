@@ -122,9 +122,14 @@
                 <h2 class="fw-bold text-white mb-1">Invoices & Customer Billing</h2>
                 <p class="text-secondary mb-0">Manage customer billing accounts, GST tax statements, and payments.</p>
             </div>
-            <a href="{% url 'invoice_create' %}" class="btn btn-custom-primary px-4 py-2">
-                + Create New Invoice
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{% url 'qr_scanner' %}" class="btn btn-outline-success px-3 py-2">
+                    📷 Scan / Decode QR
+                </a>
+                <a href="{% url 'invoice_create' %}" class="btn btn-custom-primary px-4 py-2">
+                    + Create New Invoice
+                </a>
+            </div>
         </div>
 
         <!-- Metric Summary Cards -->
