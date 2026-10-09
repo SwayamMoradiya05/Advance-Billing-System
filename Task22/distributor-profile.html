@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distributor Profile - Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            color: #0b0f19;
+            font-size: 2.2rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+        }
+
+        .info-row {
+            padding: 0.85rem 0;
+            border-bottom: 1px solid rgba(31, 41, 61, 0.6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        .info-val {
+            font-size: 0.95rem;
+            color: #f3f4f6;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container-fluid px-lg-5">
+            <a class="navbar-brand" href="index.html">
+                <span class="brand-icon">DIS</span>
+                <span>Distributor Logistics Suite</span>
+            </a>
+            
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <span class="badge-distributor">📦 Wholesale Partner</span>
+
+                <div class="dropdown">
+                    <button class="btn btn-outline-custom dropdown-toggle d-flex align-items-center gap-2 py-1 px-3 rounded-pill" type="button" data-bs-toggle="dropdown">
+                        <div class="text-start" style="line-height: 1.1;">
+                            <div class="fw-bold small text-light" id="navCompanyName">Apex Global Supplies</div>
+                            <div class="text-muted" style="font-size: 0.7rem;" id="navDistributorId">David Miller (DIST-8842)</div>
+                        </div>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg border-secondary">
+                        <li><h6 class="dropdown-header">Tier-1 Registered Distributor</h6></li>
+                        <li><a class="dropdown-item text-light small" href="index.html">🏠 Portal Hub</a></li>
+                        <li><a class="dropdown-item text-info small fw-bold" href="distributor-profile.html">👤 My Profile</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="AuthManager.logout(); return false;">🚪 Log Out Session</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Workspace Container -->
+    <div class="container-fluid px-lg-5 py-4">
+
+        <!-- Page Header -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold text-light mb-1">Distributor Partner Profile</h3>
+                <p class="text-secondary small mb-0">View & manage your personal contact information, company details, and distributor credit status.</p>
+            </div>
+            <div class="d-flex gap-2 mt-2 mt-sm-0">
+                <a href="index.html" class="btn btn-outline-custom btn-sm rounded-pill px-3">← Back to Portal Hub</a>
+            </div>
+        </div>
+
+        <!-- Profile Hero Banner Card -->
+        <div class="glass-panel glass-distributor p-4 mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="profile-avatar" id="profileAvatarDisplay">
+                        D
+                    </div>
+                    <div>
+                        <h4 class="fw-bold text-light mb-1" id="profileNameDisplay">David Miller</h4>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <span class="badge bg-info text-dark fw-bold" id="profileIdDisplay">ID: DIST-8842</span>
+                            <span class="badge bg-success">✓ Verified Partner</span>
+                            <span class="text-muted small">Registered Partner Account</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    <div class="small text-secondary text-uppercase fw-semibold">Wholesale Credit Line</div>
+                    <div class="fs-2 fw-bold text-distributor" id="profileCreditDisplay">₹1,50,000.00</div>
+                    <div class="small text-success">Active Stock Purchasing Limit</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="row g-4">
+            <!-- Profile Details Summary Card -->
+            <div class="col-lg-6">
+                <div class="glass-panel p-4 h-100">
+                    <h5 class="fw-bold text-light mb-3 d-flex align-items-center gap-2">
+                        <span>📋</span> Account & Business Information
+                    </h5>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Full Name</span>
+                        <span class="info-val" id="profileFullNameVal">David Miller</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Email Address</span>
+                        <span class="info-val text-info" id="profileEmailVal">apex@distributor.com</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Phone Number</span>
+                        <span class="info-val" id="profilePhoneVal">+1 555-019-8842</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Company / Business Name</span>
+                        <span class="info-val" id="profileCompanyVal">Apex Global Supplies</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Distributor ID Code</span>
+                        <span class="info-val text-distributor font-monospace" id="profileIdVal">DIST-8842</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Credit Allowance Limit</span>
+                        <span class="info-val text-success" id="profileCreditVal">₹1,50,000.00</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">Verification Status</span>
+                        <span class="info-val text-success">✓ Active & Verified</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Profile Form Card -->
+            <div class="col-lg-6">
+                <div class="glass-panel p-4 h-100">
+                    <h5 class="fw-bold text-light mb-3 d-flex align-items-center gap-2">
+                        <span>✏️</span> Edit Profile Details
+                    </h5>
+
+                    <form id="distributorProfileForm">
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-semibold" for="inputFullName">Full Name</label>
+                            <input type="text" class="form-control form-control-dark" id="inputFullName" required placeholder="Full Name">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-semibold" for="inputEmail">Email Address</label>
+                            <input type="email" class="form-control form-control-dark" id="inputEmail" required placeholder="Email Address">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-semibold" for="inputPhone">Phone Number</label>
+                            <input type="text" class="form-control form-control-dark" id="inputPhone" required placeholder="Phone Number">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small fw-semibold" for="inputCompany">Company / Business Name</label>
+                            <input type="text" class="form-control form-control-dark" id="inputCompany" placeholder="Company Name">
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="index.html" class="btn btn-outline-custom">Cancel</a>
+                            <button type="submit" class="btn btn-distributor">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/distributor-profile.js"></script>
+</body>
+</html>

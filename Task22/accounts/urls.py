@@ -1,0 +1,101 @@
+from django.urls import path
+from . import views
+
+
+urlpatterns = [
+    path('', views.portal_hub_view, name='home'),
+
+    # Authentication
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+
+    # Distributor
+    path(
+        'distributor-login/',
+        views.distributor_login_view,
+        name='distributor_login'
+    ),
+
+    path(
+        'distributor-register/',
+        views.distributor_register_view,
+        name='distributor_register'
+    ),
+
+    path(
+        'distributor-dashboard/',
+        views.distributor_dashboard_view,
+        name='distributor_dashboard'
+    ),
+
+    path(
+        'distributor-profile/',
+        views.distributor_profile_view,
+        name='distributor_profile'
+    ),
+
+    # Dashboard
+    path(
+        'dashboard/',
+        views.dashboard_view,
+        name='dashboard'
+    ),
+    
+    path(
+    'reports/',
+    views.reports_view,
+    name='reports'
+    ),
+
+    # Password Recovery
+    path(
+        'forgot-password/',
+        views.forgot_password_view,
+        name='forgot_password'
+    ),
+
+    # Admin Registration
+    path(
+        'admin-register/',
+        views.admin_register_view,
+        name='admin_register'
+    ),
+
+    # APIs
+    path(
+        'api/login/',
+        views.api_login_view,
+        name='api_login'
+    ),
+
+    path(
+        'api/register/',
+        views.api_register_view,
+        name='api_register'
+    ),
+
+    path(
+        'api/admin/register/',
+        views.api_admin_register_view,
+        name='api_admin_register'
+    ),
+
+    path(
+        'api/distributor/profile/',
+        views.api_distributor_profile_view,
+        name='api_distributor_profile'
+    ),
+
+    # Admin Password Recovery APIs
+    path(
+        'api/request-otp/',
+        views.api_request_otp_view,
+        name='api_request_otp'
+    ),
+
+    path(
+        'api/verify-otp/',
+        views.api_verify_otp_view,
+        name='api_verify_otp'
+    ),
+]

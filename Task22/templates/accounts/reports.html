@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Reports | Advance Billing System
+    </title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            min-height: 100vh;
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background: #0d1117;
+
+            color: #eee9dc;
+        }
+
+
+        .page {
+
+            max-width: 1450px;
+
+            margin: 0 auto;
+
+            padding: 30px 32px 55px;
+        }
+
+
+        /* =====================================================
+           HEADER
+        ===================================================== */
+
+        .header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-end;
+
+            gap: 25px;
+
+            margin-bottom: 22px;
+        }
+
+
+        .eyebrow {
+
+            color: #c7a45d;
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            letter-spacing: 2px;
+
+            text-transform: uppercase;
+
+            margin-bottom: 8px;
+        }
+
+
+        h1 {
+
+            margin: 0;
+
+            color: #f5f0e5;
+
+            font-size: 32px;
+
+            line-height: 1.1;
+        }
+
+
+        .description {
+
+            margin: 8px 0 0;
+
+            color: #858a8e;
+
+            font-size: 13px;
+        }
+
+
+        .actions {
+
+            display: flex;
+
+            gap: 8px;
+        }
+
+
+        .btn-link,
+        .print-btn {
+
+            border: 1px solid #343a43;
+
+            background: #151a21;
+
+            color: #c8c3b7;
+
+            padding: 9px 13px;
+
+            border-radius: 7px;
+
+            text-decoration: none;
+
+            font-size: 11px;
+
+            font-weight: 700;
+        }
+
+
+        .print-btn {
+
+            border-color: #8f743f;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #c5a45d,
+                    #92713a
+                );
+
+            color: #17130d;
+
+            cursor: pointer;
+        }
+
+
+        /* =====================================================
+           PERIOD FILTER
+        ===================================================== */
+
+        .period-bar {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 15px;
+
+            padding: 9px;
+
+            margin-bottom: 14px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #151a21,
+                    #11151b
+                );
+
+            border: 1px solid #2a3038;
+
+            border-radius: 10px;
+        }
+
+
+        .period-label {
+
+            color: #777d80;
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+            padding-left: 8px;
+        }
+
+
+        .periods {
+
+            display: flex;
+
+            gap: 4px;
+
+            flex-wrap: wrap;
+        }
+
+
+        .period {
+
+            color: #9a9d99;
+
+            text-decoration: none;
+
+            padding: 8px 12px;
+
+            border-radius: 6px;
+
+            font-size: 10px;
+
+            font-weight: 700;
+        }
+
+
+        .period:hover {
+
+            background: #20252c;
+
+            color: #e5dfd2;
+        }
+
+
+        .period.active {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #d0b06b,
+                    #a98746
+                );
+
+            color: #17130d;
+        }
+
+
+        /* =====================================================
+           NEW DATE RANGE FORM
+        ===================================================== */
+
+        .report-form {
+
+            padding: 18px;
+
+            margin-bottom: 18px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #151a21,
+                    #11151b
+                );
+
+            border: 1px solid #2a3038;
+
+            border-radius: 10px;
+        }
+
+
+        .form-title {
+
+            color: #eee9dc;
+
+            font-size: 14px;
+
+            font-weight: 750;
+        }
+
+
+        .form-help {
+
+            color: #6f7478;
+
+            font-size: 10px;
+
+            margin-top: 4px;
+
+            margin-bottom: 15px;
+        }
+
+
+        .form-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                1fr
+                auto;
+
+            gap: 12px;
+
+            align-items: end;
+        }
+
+
+        .field label {
+
+            display: block;
+
+            color: #858a8e;
+
+            font-size: 9px;
+
+            font-weight: 750;
+
+            letter-spacing: .8px;
+
+            text-transform: uppercase;
+
+            margin-bottom: 6px;
+        }
+
+
+        .field input {
+
+            width: 100%;
+
+            height: 40px;
+
+            background: #0c1016;
+
+            color: #e9e3d6;
+
+            border: 1px solid #303640;
+
+            border-radius: 6px;
+
+            padding: 0 11px;
+
+            outline: none;
+
+            font-size: 11px;
+        }
+
+
+        .field input:focus {
+
+            border-color: #b29455;
+
+            box-shadow:
+                0 0 0 2px
+                rgba(178, 148, 85, .10);
+        }
+
+
+        .generate {
+
+            height: 40px;
+
+            padding: 0 18px;
+
+            border: 0;
+
+            border-radius: 6px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #c5a45e,
+                    #96743b
+                );
+
+            color: #17130d;
+
+            font-size: 10px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+            white-space: nowrap;
+        }
+
+
+        .generate:hover {
+
+            filter: brightness(1.08);
+        }
+
+
+        .error {
+
+            margin-top: 12px;
+
+            padding: 9px 11px;
+
+            border: 1px solid
+                rgba(185,103,82,.35);
+
+            background:
+                rgba(185,103,82,.08);
+
+            border-radius: 6px;
+
+            color: #d38b78;
+
+            font-size: 10px;
+        }
+
+
+        /* =====================================================
+           CUSTOM REPORT RESULT
+        ===================================================== */
+
+        .custom-result {
+
+            margin-bottom: 18px;
+
+            padding: 13px 16px;
+
+            border: 1px solid #343a43;
+
+            border-left: 3px solid #c7a45d;
+
+            background: #12171e;
+
+            border-radius: 8px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 15px;
+        }
+
+
+        .custom-result-title {
+
+            color: #c7a45d;
+
+            font-size: 9px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+
+        .custom-result-date {
+
+            color: #777d80;
+
+            font-size: 10px;
+
+            margin-top: 4px;
+        }
+
+
+        .custom-result-value {
+
+            color: #a9bb8f;
+
+            font-size: 11px;
+
+            font-weight: 750;
+        }
+
+
+        /* =====================================================
+           KPI
+        ===================================================== */
+
+        .metrics {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 13px;
+
+            margin-bottom: 17px;
+        }
+
+
+        .metric {
+
+            min-height: 135px;
+
+            padding: 20px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #171c24,
+                    #12161c
+                );
+
+            border: 1px solid #292f37;
+
+            border-radius: 10px;
+        }
+
+
+        .metric.revenue {
+            border-top: 2px solid #b9964f;
+        }
+
+
+        .metric.tax {
+            border-top: 2px solid #a47d39;
+        }
+
+
+        .metric.paid {
+            border-top: 2px solid #7c9368;
+        }
+
+
+        .metric.outstanding {
+            border-top: 2px solid #a76554;
+        }
+
+
+        .metric-label {
+
+            color: #85857e;
+
+            font-size: 9px;
+
+            font-weight: 800;
+
+            letter-spacing: 1.1px;
+
+            text-transform: uppercase;
+        }
+
+
+        .metric-value {
+
+            margin-top: 14px;
+
+            color: #f2ede2;
+
+            font-size: 25px;
+
+            font-weight: 800;
+        }
+
+
+        .metric.revenue .metric-value {
+            color: #c7a45d;
+        }
+
+
+        .metric.paid .metric-value {
+            color: #a8ba91;
+        }
+
+
+        .metric.outstanding .metric-value {
+            color: #c28b77;
+        }
+
+
+        .metric-description {
+
+            margin-top: 6px;
+
+            color: #62686c;
+
+            font-size: 10px;
+        }
+
+
+        /* =====================================================
+           PANELS
+        ===================================================== */
+
+        .grid {
+
+            display: grid;
+
+            grid-template-columns:
+                1.25fr
+                .75fr;
+
+            gap: 16px;
+
+            margin-bottom: 16px;
+        }
+
+
+        .panel {
+
+            overflow: hidden;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #151a21,
+                    #11151b
+                );
+
+            border: 1px solid #2a3038;
+
+            border-radius: 10px;
+        }
+
+
+        .panel.full {
+
+            margin-bottom: 16px;
+        }
+
+
+        .panel-head {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 16px 18px;
+
+            border-bottom: 1px solid #272d35;
+        }
+
+
+        .panel-title {
+
+            color: #eee9dc;
+
+            font-size: 13px;
+
+            font-weight: 750;
+        }
+
+
+        .panel-subtitle {
+
+            color: #656b70;
+
+            font-size: 9px;
+
+            margin-top: 3px;
+        }
+
+
+        .panel-body {
+
+            padding: 16px 18px;
+        }
+
+
+        /* =====================================================
+           SUMMARY
+        ===================================================== */
+
+        .summary {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3,1fr);
+
+            gap: 9px;
+        }
+
+
+        .summary-box,
+        .inventory-box {
+
+            background: #0f1319;
+
+            border: 1px solid #252b33;
+
+            border-radius: 7px;
+
+            padding: 13px;
+        }
+
+
+        .small-label {
+
+            color: #696f72;
+
+            font-size: 9px;
+
+            text-transform: uppercase;
+
+            letter-spacing: .7px;
+        }
+
+
+        .small-value {
+
+            margin-top: 7px;
+
+            color: #e6dfd1;
+
+            font-size: 16px;
+
+            font-weight: 800;
+        }
+
+
+        /* =====================================================
+           STATUS
+        ===================================================== */
+
+        .status-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 10px 0;
+
+            border-bottom: 1px solid #22272e;
+        }
+
+
+        .status-row:last-child {
+
+            border-bottom: 0;
+        }
+
+
+        .status-name {
+
+            color: #aaa9a1;
+
+            font-size: 11px;
+        }
+
+
+        .status-count {
+
+            min-width: 28px;
+
+            padding: 4px 7px;
+
+            text-align: center;
+
+            border-radius: 20px;
+
+            background: #22272e;
+
+            color: #ddd4c1;
+
+            font-size: 9px;
+
+            font-weight: 800;
+        }
+
+
+        /* =====================================================
+           INVENTORY
+        ===================================================== */
+
+        .inventory {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(6,1fr);
+
+            gap: 9px;
+        }
+
+
+        .inventory-number {
+
+            color: #e9e2d2;
+
+            font-size: 17px;
+
+            font-weight: 800;
+
+            margin-top: 5px;
+        }
+
+
+        .green {
+            color: #98ae81 !important;
+        }
+
+
+        .gold {
+            color: #c7a45d !important;
+        }
+
+
+        .red {
+            color: #bd816e !important;
+        }
+
+
+        /* =====================================================
+           TABLE
+        ===================================================== */
+
+        .table-wrap {
+
+            overflow-x: auto;
+        }
+
+
+        table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+        }
+
+
+        th {
+
+            padding: 10px 12px;
+
+            text-align: left;
+
+            color: #676d71;
+
+            font-size: 8px;
+
+            text-transform: uppercase;
+
+            letter-spacing: .8px;
+
+            border-bottom: 1px solid #292e36;
+        }
+
+
+        td {
+
+            padding: 12px;
+
+            color: #a9aaa5;
+
+            font-size: 10px;
+
+            border-bottom: 1px solid #20252c;
+        }
+
+
+        tr:last-child td {
+
+            border-bottom: 0;
+        }
+
+
+        td:first-child {
+
+            color: #e0d9cb;
+
+            font-weight: 650;
+        }
+
+
+        .money {
+
+            color: #c7a45d;
+
+            font-weight: 750;
+        }
+
+
+        .paid-text {
+
+            color: #98ae81;
+
+            font-weight: 700;
+        }
+
+
+        .balance {
+
+            color: #bd816e;
+
+            font-weight: 700;
+        }
+
+
+        .badge {
+
+            display: inline-block;
+
+            padding: 4px 7px;
+
+            border-radius: 20px;
+
+            background: #23282f;
+
+            color: #b8bab3;
+
+            font-size: 8px;
+
+            font-weight: 800;
+
+            text-transform: uppercase;
+        }
+
+
+        .empty {
+
+            padding: 28px;
+
+            text-align: center;
+
+            color: #656b70;
+
+            font-size: 10px;
+        }
+
+
+        .footer {
+
+            text-align: right;
+
+            color: #4e5559;
+
+            font-size: 9px;
+
+            padding-top: 5px;
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width:1050px) {
+
+            .metrics {
+
+                grid-template-columns:
+                    repeat(2,1fr);
+            }
+
+            .inventory {
+
+                grid-template-columns:
+                    repeat(3,1fr);
+            }
+        }
+
+
+        @media (max-width:750px) {
+
+            .page {
+
+                padding:
+                    22px 14px 40px;
+            }
+
+            .header {
+
+                flex-direction: column;
+
+                align-items: flex-start;
+            }
+
+            .period-bar {
+
+                flex-direction: column;
+
+                align-items: flex-start;
+            }
+
+            .form-grid {
+
+                grid-template-columns: 1fr;
+            }
+
+            .generate {
+
+                width: 100%;
+            }
+
+            .metrics,
+            .grid {
+
+                grid-template-columns: 1fr;
+            }
+
+            .summary {
+
+                grid-template-columns:
+                    1fr 1fr;
+            }
+
+            .inventory {
+
+                grid-template-columns:
+                    1fr 1fr;
+            }
+
+            .custom-result {
+
+                flex-direction: column;
+
+                align-items: flex-start;
+            }
+        }
+
+
+        /* =====================================================
+           PRINT
+        ===================================================== */
+
+        @media print {
+
+            body {
+
+                background: white;
+
+                color: #111;
+            }
+
+            .page {
+
+                max-width: 100%;
+
+                padding: 0;
+            }
+
+            .actions,
+            .period-bar,
+            .report-form {
+
+                display: none;
+            }
+
+            .metric,
+            .panel,
+            .summary-box,
+            .inventory-box {
+
+                background: white;
+
+                border: 1px solid #ddd;
+            }
+
+            h1,
+            .panel-title,
+            .metric-value,
+            .small-value,
+            td:first-child {
+
+                color: #111;
+            }
+
+            .description,
+            .panel-subtitle,
+            .metric-label,
+            .metric-description,
+            .small-label,
+            th,
+            td {
+
+                color: #444;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="page">
+
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+
+    <header class="header">
+
+        <div>
+
+            <div class="eyebrow">
+                Administrative Intelligence
+            </div>
+
+            <h1>
+                Reports &amp; Analytics
+            </h1>
+
+            <p class="description">
+                Billing, invoice, inventory and customer reporting.
+            </p>
+
+        </div>
+
+
+        <div class="actions">
+
+            <a href="{% url 'dashboard' %}"
+               class="btn-link">
+
+                ← Dashboard
+
+            </a>
+
+
+            <button
+                type="button"
+                class="print-btn"
+                onclick="window.print()">
+
+                ⎙ Print
+
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         EXISTING PERIOD FILTER
+    ===================================================== -->
+
+    <div class="period-bar">
+
+        <div class="period-label">
+            Reporting Period
+        </div>
+
+
+        <div class="periods">
+
+            <a href="?period=today"
+               class="period {% if period == 'today' and not custom_range_active %}active{% endif %}">
+                Today
+            </a>
+
+
+            <a href="?period=7"
+               class="period {% if period == '7' and not custom_range_active %}active{% endif %}">
+                7 Days
+            </a>
+
+
+            <a href="?period=30"
+               class="period {% if period == '30' and not custom_range_active %}active{% endif %}">
+                30 Days
+            </a>
+
+
+            <a href="?period=90"
+               class="period {% if period == '90' and not custom_range_active %}active{% endif %}">
+                90 Days
+            </a>
+
+
+            <a href="?period=all"
+               class="period {% if period == 'all' and not custom_range_active %}active{% endif %}">
+                All Time
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         NEW: DATE RANGE REPORT FORM
+    ===================================================== -->
+
+    <section class="report-form">
+
+        <div class="form-title">
+            Generate Invoice Report
+        </div>
+
+
+        <div class="form-help">
+            Select a From Date and To Date to filter invoices
+            and calculate the results for that exact range.
+        </div>
+
+
+        <form
+            method="get"
+            action="{% url 'reports' %}">
+
+            <div class="form-grid">
+
+
+                <div class="field">
+
+                    <label for="start_date">
+                        From Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="start_date"
+                        name="start_date"
+                        value="{{ custom_start_date }}"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="field">
+
+                    <label for="end_date">
+                        To Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="end_date"
+                        name="end_date"
+                        value="{{ custom_end_date }}"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="generate">
+
+                    Generate Report
+
+                </button>
+
+
+            </div>
+
+        </form>
+
+
+        {% if date_error %}
+
+            <div class="error">
+
+                ⚠ {{ date_error }}
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =====================================================
+         NEW: CUSTOM REPORT RESULT
+    ===================================================== -->
+
+    {% if custom_range_active and not date_error %}
+
+        <div class="custom-result">
+
+            <div>
+
+                <div class="custom-result-title">
+                    Custom Report Generated
+                </div>
+
+
+                <div class="custom-result-date">
+
+                    {{ custom_start_date }}
+                    →
+                    {{ custom_end_date }}
+
+                </div>
+
+            </div>
+
+
+            <div class="custom-result-value">
+
+                {{ total_invoice_count }}
+                invoice{{ total_invoice_count|pluralize }}
+
+                ·
+
+                ₹{{ amount_collected|floatformat:2 }}
+                collected
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         EXISTING KPI SECTION
+    ===================================================== -->
+
+    <section class="metrics">
+
+
+        <div class="metric revenue">
+
+            <div class="metric-label">
+                Total Revenue
+            </div>
+
+            <div class="metric-value">
+                ₹{{ total_revenue|floatformat:2 }}
+            </div>
+
+            <div class="metric-description">
+                Gross billing value
+            </div>
+
+        </div>
+
+
+        <div class="metric tax">
+
+            <div class="metric-label">
+                Tax Collected
+            </div>
+
+            <div class="metric-value">
+                ₹{{ total_tax|floatformat:2 }}
+            </div>
+
+            <div class="metric-description">
+                GST generated
+            </div>
+
+        </div>
+
+
+        <div class="metric paid">
+
+            <div class="metric-label">
+                Amount Received
+            </div>
+
+            <div class="metric-value">
+                ₹{{ total_paid|floatformat:2 }}
+            </div>
+
+            <div class="metric-description">
+                Payments recorded
+            </div>
+
+        </div>
+
+
+        <div class="metric outstanding">
+
+            <div class="metric-label">
+                Outstanding
+            </div>
+
+            <div class="metric-value">
+                ₹{{ outstanding_amount|floatformat:2 }}
+            </div>
+
+            <div class="metric-description">
+                Remaining invoice balance
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =====================================================
+         BILLING + STATUS
+    ===================================================== -->
+
+    <div class="grid">
+
+
+        <section class="panel">
+
+            <div class="panel-head">
+
+                <div>
+
+                    <div class="panel-title">
+                        Billing Overview
+                    </div>
+
+                    <div class="panel-subtitle">
+                        Invoice performance for {{ period_label }}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="panel-body">
+
+                <div class="summary">
+
+
+                    <div class="summary-box">
+
+                        <div class="small-label">
+                            Invoices
+                        </div>
+
+                        <div class="small-value">
+                            {{ invoice_count }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-box">
+
+                        <div class="small-label">
+                            Discounts
+                        </div>
+
+                        <div class="small-value">
+                            ₹{{ total_discount|floatformat:2 }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-box">
+
+                        <div class="small-label">
+                            Outstanding
+                        </div>
+
+                        <div class="small-value">
+                            ₹{{ outstanding_amount|floatformat:2 }}
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-head">
+
+                <div>
+
+                    <div class="panel-title">
+                        Invoice Status
+                    </div>
+
+                    <div class="panel-subtitle">
+                        Selected reporting period
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="panel-body">
+
+                {% for status in status_report %}
+
+                    <div class="status-row">
+
+                        <span class="status-name">
+                            {{ status.name }}
+                        </span>
+
+                        <span class="status-count">
+                            {{ status.count }}
+                        </span>
+
+                    </div>
+
+                {% empty %}
+
+                    <div class="empty">
+                        No invoice data available.
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         INVENTORY
+    ===================================================== -->
+
+    <section class="panel full">
+
+        <div class="panel-head">
+
+            <div>
+
+                <div class="panel-title">
+                    Inventory Intelligence
+                </div>
+
+                <div class="panel-subtitle">
+                    Current product catalogue health
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel-body">
+
+            <div class="inventory">
+
+
+                <div class="inventory-box">
+
+                    <div class="small-label">
+                        Total Products
+                    </div>
+
+                    <div class="inventory-number">
+                        {{ total_products }}
+                    </div>
+
+                </div>
+
+
+                <div class="inventory-box">
+
+                    <div class="small-label">
+                        Active
+                    </div>
+
+                    <div class="inventory-number green">
+                        {{ active_products }}
+                    </div>
+
+                </div>
+
+
+                <div class="inventory-box">
+
+                    <div class="small-label">
+                        Inactive
+                    </div>
+
+                    <div class="inventory-number">
+                        {{ inactive_products }}
+                    </div>
+
+                </div>
+
+
+                <div class="inventory-box">
+
+                    <div class="small-label">
+                        Low Stock
+                    </div>
+
+                    <div class="inventory-number gold">
+                        {{ low_stock_products }}
+                    </div>
+
+                </div>
+
+
+                <div class="inventory-box">
+
+                    <div class="small-label">
+                        Out of Stock
+                    </div>
+
+                    <div class="inventory-number red">
+                        {{ out_of_stock_products }}
+                    </div>
+
+                </div>
+
+
+                <div class="inventory-box">
+
+                    <div class="small-label">
+                        Inventory Value
+                    </div>
+
+                    <div class="inventory-number gold">
+                        ₹{{ inventory_value|floatformat:2 }}
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TOP PRODUCTS
+    ===================================================== -->
+
+    <section class="panel full">
+
+        <div class="panel-head">
+
+            <div>
+
+                <div class="panel-title">
+                    Top Products
+                </div>
+
+                <div class="panel-subtitle">
+                    Highest performing products for {{ period_label }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Product
+                        </th>
+
+                        <th>
+                            SKU
+                        </th>
+
+                        <th>
+                            Quantity
+                        </th>
+
+                        <th>
+                            Sales Value
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for product in top_products %}
+
+                        <tr>
+
+                            <td>
+                                {{ product.product__name }}
+                            </td>
+
+                            <td>
+                                {{ product.product__sku }}
+                            </td>
+
+                            <td>
+                                {{ product.quantity_sold }}
+                            </td>
+
+                            <td class="money">
+                                ₹{{ product.sales_value|floatformat:2 }}
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td colspan="4">
+
+                                <div class="empty">
+                                    No product sales data available.
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TOP CUSTOMERS
+    ===================================================== -->
+
+    <section class="panel full">
+
+        <div class="panel-head">
+
+            <div>
+
+                <div class="panel-title">
+                    Top Customers
+                </div>
+
+                <div class="panel-subtitle">
+                    Highest billing value for {{ period_label }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Customer
+                        </th>
+
+                        <th>
+                            Company
+                        </th>
+
+                        <th>
+                            Invoices
+                        </th>
+
+                        <th>
+                            Total Value
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for customer in top_customers %}
+
+                        <tr>
+
+                            <td>
+                                {{ customer.customer__name }}
+                            </td>
+
+                            <td>
+                                {{ customer.customer__company_name|default:"—" }}
+                            </td>
+
+                            <td>
+                                {{ customer.invoice_count }}
+                            </td>
+
+                            <td class="money">
+                                ₹{{ customer.total_value|floatformat:2 }}
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td colspan="4">
+
+                                <div class="empty">
+                                    No customer billing data available.
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         RECENT INVOICES
+    ===================================================== -->
+
+    <section class="panel full">
+
+        <div class="panel-head">
+
+            <div>
+
+                <div class="panel-title">
+                    Recent Invoices
+                </div>
+
+                <div class="panel-subtitle">
+                    Latest invoices within {{ period_label }}
+                </div>
+
+            </div>
+
+
+            <a href="{% url 'invoice_list' %}"
+               style="
+                   color:#c7a45d;
+                   text-decoration:none;
+                   font-size:10px;
+                   font-weight:750;
+               ">
+
+                View All →
+
+            </a>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Invoice
+                        </th>
+
+                        <th>
+                            Customer
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Total
+                        </th>
+
+                        <th>
+                            Paid
+                        </th>
+
+                        <th>
+                            Balance
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for invoice in recent_invoices %}
+
+                        <tr>
+
+                            <td>
+                                {{ invoice.invoice_number }}
+                            </td>
+
+                            <td>
+                                {{ invoice.customer.name }}
+                            </td>
+
+                            <td>
+                                {{ invoice.invoice_date|date:"d M Y" }}
+                            </td>
+
+                            <td>
+
+                                <span class="badge">
+
+                                    {{ invoice.get_status_display }}
+
+                                </span>
+
+                            </td>
+
+                            <td class="money">
+                                ₹{{ invoice.grand_total|floatformat:2 }}
+                            </td>
+
+                            <td class="paid-text">
+                                ₹{{ invoice.amount_paid|floatformat:2 }}
+                            </td>
+
+                            <td class="balance">
+                                ₹{{ invoice.balance_due|floatformat:2 }}
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td colspan="7">
+
+                                <div class="empty">
+                                    No invoices available for this period.
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <div class="footer">
+
+        Advance Billing System · {{ period_label }}
+
+    </div>
+
+
+</div>
+
+</body>
+
+</html>

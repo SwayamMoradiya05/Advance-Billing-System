@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Governance Registration - Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="register-wrapper">
+        <div class="register-card">
+            <!-- Header Branding -->
+            <div class="brand-header">
+                <img src="../static/images/company_logo.jpg" alt="Advance Billing System Logo" class="brand-logo" id="brandLogo">
+                <h1 class="brand-title">Advance Billing System</h1>
+                <p class="brand-subtitle">System Administrator Account Governance</p>
+            </div>
+
+            <!-- Form Error / Success Alert Box -->
+            <div id="alertBox" class="alert-box" style="display: none;"></div>
+
+            <!-- Admin Registration Form -->
+            <form id="adminRegisterForm" novalidate>
+                <!-- Full Name Row -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input type="text" id="firstName" name="first_name" class="form-input" placeholder="e.g. Sarah" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input type="text" id="lastName" name="last_name" class="form-input" placeholder="e.g. Connor" required>
+                    </div>
+                </div>
+
+                <!-- Username & Email Row -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username" class="form-label">System Username</label>
+                        <input type="text" id="username" name="username" class="form-input" placeholder="e.g. sysadmin_sarah" required autocomplete="username">
+                        <small class="field-hint">Min 3 characters (letters, numbers, _)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Corporate Email</label>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="e.g. sarah@advancebilling.com" required autocomplete="email">
+                    </div>
+                </div>
+
+                <!-- Admin Role Selection -->
+                <div class="form-group">
+                    <label class="form-label">Admin Role & Privileges</label>
+                    <div class="role-selector">
+                        <label class="role-option active" id="roleStaff">
+                            <input type="radio" name="role_type" value="staff" checked hidden>
+                            <span class="role-icon">🛡️</span>
+                            <div class="role-details">
+                                <span class="role-title">System Administrator</span>
+                                <span class="role-desc">Full access to Billing, Customer, and Product governance</span>
+                            </div>
+                        </label>
+                        <label class="role-option" id="roleSuperuser">
+                            <input type="radio" name="role_type" value="superuser" hidden>
+                            <span class="role-icon">👑</span>
+                            <div class="role-details">
+                                <span class="role-title">Superuser Governance</span>
+                                <span class="role-desc">System root privileges & audit ledger controls</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Passwords Row -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password" class="form-label">Security Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+                            <button type="button" class="toggle-password" data-target="password">👁️</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="confirmPassword" name="confirm_password" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+                            <button type="button" class="toggle-password" data-target="confirmPassword">👁️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Password Strength Meter -->
+                <div class="strength-meter-container" id="strengthContainer" style="display: none;">
+                    <div class="strength-bar-bg">
+                        <div class="strength-bar-fill" id="strengthBar"></div>
+                    </div>
+                    <span class="strength-text" id="strengthText">Weak</span>
+                </div>
+
+                <!-- Security Key / Auth Code -->
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="securityKey" class="form-label">Admin Security Key (Optional)</label>
+                    <input type="password" id="securityKey" name="security_key" class="form-input" placeholder="Master Key or Invite Token (If assigned)">
+                </div>
+
+                <!-- Terms Checkbox -->
+                <div class="form-checkbox-group">
+                    <input type="checkbox" id="agreeTerms" name="agree_terms" class="form-checkbox" required>
+                    <label for="agreeTerms" class="checkbox-label">
+                        I confirm that I am authorized to register an Admin Governance Account for Advance Billing System.
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span class="btn-text">⚡ Create Admin Account</span>
+                    <span class="btn-spinner" style="display: none;">⏳ Creating Account...</span>
+                </button>
+            </form>
+
+            <!-- Card Footer -->
+            <div class="card-footer">
+                Already registered? <a href="../login/" class="footer-link">Sign In to Admin Portal →</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Governance Registration - Advance Billing System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% load static %}
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --bg-dark: #0a0f1a;
+            --bg-card: #111827;
+            --bg-input: #1e293b;
+            --border: #2d3748;
+            --border-focus: #10b981;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+            --radius: 10px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            background-image:
+                radial-gradient(ellipse at 15% 30%, rgba(16,185,129,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 85% 70%, rgba(6,78,59,0.08) 0%, transparent 60%);
+        }
+
+        .register-wrapper { width: 100%; max-width: 740px; }
+
+        .register-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px 48px;
+            box-shadow: 0 0 0 1px rgba(16,185,129,0.08), 0 25px 60px rgba(0,0,0,0.55);
+        }
+
+        .brand-header { text-align: center; margin-bottom: 32px; }
+
+        .brand-logo {
+            width: 64px; height: 64px; border-radius: 10px;
+            object-fit: contain; margin-bottom: 12px;
+            border: 2px solid rgba(16,185,129,0.3);
+        }
+
+        .brand-title { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+        .brand-subtitle { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+
+        .alert-box { border-radius: var(--radius); padding: 12px 16px; font-size: 0.85rem; font-weight: 500; margin-bottom: 20px; line-height: 1.5; display: none; }
+        .alert-box.alert-success { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); color: #34d399; }
+        .alert-box.alert-danger { background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.35); color: #fca5a5; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-label { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 7px; }
+
+        .form-input {
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: var(--text-primary); border-radius: 8px; padding: 10px 14px;
+            font-size: 0.9rem; font-family: inherit; transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
+        }
+        .form-input:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+        .form-input::placeholder { color: var(--text-muted); }
+        .form-input.input-error { border-color: var(--danger); }
+
+        .field-hint { font-size: 0.73rem; color: var(--text-muted); margin-top: 4px; }
+
+        .role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .role-option {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 14px 16px; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+        }
+        .role-option:hover { border-color: var(--primary); }
+        .role-option.active { border-color: var(--primary); background: rgba(16,185,129,0.07); }
+        .role-icon { font-size: 1.5rem; flex-shrink: 0; }
+        .role-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); display: block; }
+        .role-desc { font-size: 0.72rem; color: var(--text-muted); line-height: 1.35; display: block; }
+
+        .password-input-wrapper { position: relative; display: flex; align-items: center; }
+        .password-input-wrapper .form-input { padding-right: 42px; }
+        .toggle-password { position: absolute; right: 10px; background: none; border: none; cursor: pointer; font-size: 1rem; opacity: 0.5; padding: 4px; }
+        .toggle-password:hover { opacity: 1; }
+
+        .strength-meter-container { display: none; align-items: center; gap: 10px; margin-top: -4px; margin-bottom: 12px; }
+        .strength-bar-bg { flex: 1; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
+        .strength-bar-fill { height: 100%; width: 0%; border-radius: 99px; transition: width 0.3s, background-color 0.3s; }
+        .strength-text { font-size: 0.74rem; font-weight: 600; min-width: 66px; text-align: right; }
+
+        .form-checkbox-group { display: flex; align-items: flex-start; gap: 10px; margin-top: 18px; margin-bottom: 22px; }
+        .form-checkbox { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--primary); flex-shrink: 0; cursor: pointer; }
+        .checkbox-label { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; cursor: pointer; }
+
+        .btn-submit {
+            width: 100%; background: var(--primary); color: #fff; border: none;
+            border-radius: var(--radius); padding: 13px 24px; font-size: 0.95rem; font-weight: 700;
+            font-family: inherit; cursor: pointer; transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+            box-shadow: 0 4px 14px rgba(16,185,129,0.30);
+        }
+        .btn-submit:hover { background: var(--primary-dark); box-shadow: 0 6px 20px rgba(16,185,129,0.40); }
+        .btn-submit:active { transform: translateY(1px); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .card-footer { text-align: center; margin-top: 24px; font-size: 0.82rem; color: var(--text-muted); }
+        .footer-link { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .footer-link:hover { color: var(--primary-dark); }
+
+        @media (max-width: 600px) {
+            .register-card { padding: 28px 22px; }
+            .form-row, .role-selector { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-wrapper">
+        <div class="register-card">
+            <!-- Header Branding -->
+            <div class="brand-header">
+                <img src="{% static 'images/company_logo.jpg' %}" alt="Advance Billing System Logo" class="brand-logo">
+                <h1 class="brand-title">Advance Billing System</h1>
+                <p class="brand-subtitle">System Administrator Account Governance</p>
+            </div>
+
+            <!-- Alert Box -->
+            <div id="alertBox" class="alert-box"></div>
+
+            <!-- Admin Registration Form -->
+            <form id="adminRegisterForm" novalidate>
+                <!-- Full Name -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input type="text" id="firstName" name="first_name" class="form-input" placeholder="e.g. Sarah" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input type="text" id="lastName" name="last_name" class="form-input" placeholder="e.g. Connor" required>
+                    </div>
+                </div>
+
+                <!-- Username & Email -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username" class="form-label">System Username</label>
+                        <input type="text" id="username" name="username" class="form-input" placeholder="e.g. sysadmin_sarah" required autocomplete="username">
+                        <small class="field-hint">Min 3 characters (letters, numbers, _)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Corporate Email</label>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="e.g. sarah@advancebilling.com" required autocomplete="email">
+                    </div>
+                </div>
+
+                <!-- Role Selection -->
+                <div class="form-group">
+                    <label class="form-label">Admin Role &amp; Privileges</label>
+                    <div class="role-selector">
+                        <label class="role-option active" id="roleStaff">
+                            <input type="radio" name="role_type" value="staff" checked hidden>
+                            <span class="role-icon">🛡️</span>
+                            <div>
+                                <span class="role-title">System Administrator</span>
+                                <span class="role-desc">Full access to Billing, Customer &amp; Product governance</span>
+                            </div>
+                        </label>
+                        <label class="role-option" id="roleSuperuser">
+                            <input type="radio" name="role_type" value="superuser" hidden>
+                            <span class="role-icon">👑</span>
+                            <div>
+                                <span class="role-title">Superuser Governance</span>
+                                <span class="role-desc">System root privileges &amp; audit ledger controls</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Passwords -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password" class="form-label">Security Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+                            <button type="button" class="toggle-password" data-target="password">👁️</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="confirmPassword" name="confirm_password" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+                            <button type="button" class="toggle-password" data-target="confirmPassword">👁️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Strength Meter -->
+                <div class="strength-meter-container" id="strengthContainer">
+                    <div class="strength-bar-bg">
+                        <div class="strength-bar-fill" id="strengthBar"></div>
+                    </div>
+                    <span class="strength-text" id="strengthText">Weak</span>
+                </div>
+
+                <!-- Terms -->
+                <div class="form-checkbox-group">
+                    <input type="checkbox" id="agreeTerms" name="agree_terms" class="form-checkbox" required>
+                    <label for="agreeTerms" class="checkbox-label">
+                        I confirm that I am authorized to register an Admin Governance Account for Advance Billing System.
+                    </label>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span class="btn-text">⚡ Create Admin Account</span>
+                    <span class="btn-spinner" style="display:none;">⏳ Creating Account...</span>
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="card-footer">
+                Already registered? <a href="{% url 'login' %}" class="footer-link">Sign In to Admin Portal →</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        const form = document.getElementById('adminRegisterForm');
+        const alertBox = document.getElementById('alertBox');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const strengthContainer = document.getElementById('strengthContainer');
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+        const submitBtn = document.getElementById('submitBtn');
+
+        document.querySelectorAll('.role-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('.role-option').forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const input = document.getElementById(btn.getAttribute('data-target'));
+                if (!input) return;
+                input.type = input.type === 'password' ? 'text' : 'password';
+                btn.textContent = input.type === 'password' ? '👁️' : '🙈';
+            });
+        });
+
+        passwordInput.addEventListener('input', () => {
+            const val = passwordInput.value;
+            if (!val) { strengthContainer.style.display = 'none'; return; }
+            strengthContainer.style.display = 'flex';
+            let score = 0;
+            if (val.length >= 8) score++;
+            if (val.length >= 12) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+            const levels = [
+                {label:'Very Weak', pct:15, color:'#ef4444'},
+                {label:'Weak',      pct:30, color:'#f97316'},
+                {label:'Fair',      pct:55, color:'#f59e0b'},
+                {label:'Strong',    pct:80, color:'#22c55e'},
+                {label:'Very Strong', pct:100, color:'#10b981'},
+            ];
+            const lvl = levels[Math.min(score, 4)];
+            strengthBar.style.width = lvl.pct + '%';
+            strengthBar.style.backgroundColor = lvl.color;
+            strengthText.textContent = lvl.label;
+            strengthText.style.color = lvl.color;
+        });
+
+        function showAlert(msg, type='danger') {
+            alertBox.className = 'alert-box alert-' + type;
+            alertBox.innerHTML = msg;
+            alertBox.style.display = 'block';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            alertBox.style.display = 'none';
+            const activeRole = document.querySelector('.role-option.active input[type="radio"]');
+            const payload = {
+                username: document.getElementById('username').value.trim(),
+                email: document.getElementById('email').value.trim().toLowerCase(),
+                password: passwordInput.value,
+                first_name: document.getElementById('firstName').value.trim(),
+                last_name: document.getElementById('lastName').value.trim(),
+                is_superuser: activeRole && activeRole.value === 'superuser',
+            };
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const errs = [];
+            if (!payload.first_name) errs.push('First Name is required.');
+            if (payload.username.length < 3) errs.push('Username must be at least 3 characters.');
+            if (!emailRegex.test(payload.email)) errs.push('Valid corporate email is required.');
+            if (payload.password.length < 8) errs.push('Password must be at least 8 characters.');
+            else if (!/[A-Za-z]/.test(payload.password) || !/[0-9]/.test(payload.password)) errs.push('Password must contain letters and numbers.');
+            if (payload.password !== confirmPasswordInput.value) errs.push('Passwords do not match.');
+            if (!document.getElementById('agreeTerms').checked) errs.push('You must confirm authorization to register.');
+
+            if (errs.length > 0) { showAlert('⚠️ Please fix:<br>• ' + errs.join('<br>• ')); return; }
+
+            submitBtn.disabled = true;
+            submitBtn.querySelector('.btn-text').style.display = 'none';
+            submitBtn.querySelector('.btn-spinner').style.display = 'inline';
+
+            try {
+                const resp = await fetch('{% url "api_admin_register" %}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                    body: JSON.stringify(payload),
+                });
+                const data = await resp.json();
+                if (resp.status === 201) {
+                    showAlert('✅ Admin account created! Welcome, <strong>' + (data.user.first_name || data.user.username) + '</strong>. Redirecting...', 'success');
+                    form.reset();
+                    setTimeout(() => { window.location.href = '{% url "login" %}'; }, 2500);
+                } else {
+                    let msg = '⚠️ Registration failed:';
+                    if (data.details) {
+                        msg += Object.entries(data.details).map(([k,v]) => `<br>• <strong>${k}:</strong> ${Array.isArray(v) ? v[0] : v}`).join('');
+                    } else if (data.error) { msg += '<br>• ' + data.error; }
+                    showAlert(msg);
+                }
+            } catch (_) {
+                showAlert('❌ Network error. Please check your connection.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.querySelector('.btn-text').style.display = 'inline';
+                submitBtn.querySelector('.btn-spinner').style.display = 'none';
+            }
+        });
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+Django>=4.2.0,<5.2.0
+xhtml2pdf>=0.2.11
+qrcode>=7.4.2
+opencv-python-headless>=4.8.0
