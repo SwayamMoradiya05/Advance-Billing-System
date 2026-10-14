@@ -1,10 +1,14 @@
+import base64
+import json
 import random
 import time
+from io import BytesIO
 from decimal import Decimal
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+import qrcode
 
 User = get_user_model()
 
@@ -121,6 +125,11 @@ class Invoice(models.Model):
         default="Thank you for your business! Payment is due according to agreed terms.",
         help_text="Standard legal terms, refund policies, or payment instructions."
     )
+    qr_code = models.TextField(
+        blank=True,
+        default="",
+        help_text="Base64-encoded PNG verification QR code for this invoice."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -162,6 +171,31 @@ class Invoice(models.Model):
 
         self.full_clean()
         super().save(*args, **kwargs)
+        self.refresh_qr_code()
+
+    def refresh_qr_code(self):
+        """Generate and persist a QR code from the current saved invoice data."""
+        qr_payload = json.dumps({
+            'invoice': self.invoice_number,
+            'customer': self.customer.name if self.customer else 'N/A',
+            'date': self.invoice_date.strftime('%Y-%m-%d') if self.invoice_date else '',
+            'due_date': self.due_date.strftime('%Y-%m-%d') if self.due_date else '',
+            'items_count': self.total_items_count,
+            'subtotal': str(self.subtotal),
+            'tax': str(self.tax_amount),
+            'total': str(self.grand_total),
+            'status': self.status,
+            'verified': True,
+            'hash': f"VERIFIED-INTAKE-{self.pk}-{self.invoice_number}"
+        })
+        qr_image = qrcode.make(qr_payload)
+        qr_buffer = BytesIO()
+        qr_image.save(qr_buffer, format="PNG")
+        self.qr_code = (
+            f"data:image/png;base64,"
+            f"{base64.b64encode(qr_buffer.getvalue()).decode('utf-8')}"
+        )
+        type(self).objects.filter(pk=self.pk).update(qr_code=self.qr_code)
 
     @classmethod
     def generate_unique_invoice_number(cls):
@@ -219,6 +253,7 @@ class Invoice(models.Model):
 
         if save_instance:
             super().save(update_fields=['subtotal', 'tax_amount', 'grand_total', 'status'])
+            self.refresh_qr_code()
 
 
 class InvoiceItem(models.Model):

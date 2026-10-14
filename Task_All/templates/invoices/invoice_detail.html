@@ -150,8 +150,14 @@
             </div>
 
             <!-- Totals Summary -->
-            <div class="row justify-content-end mb-4">
-                <div class="col-md-5">
+            <div class="row align-items-end mb-4">
+                {% if invoice.qr_code %}
+                <div class="col-md-4 text-center mt-4 mt-md-0">
+                    <img src="{{ invoice.qr_code }}" alt="Invoice verification QR code" style="width: 144px; height: 144px;">
+                    <div class="text-secondary small mt-2">Invoice verification</div>
+                </div>
+                {% endif %}
+                <div class="col-md-5 ms-auto">
                     <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
                         <span class="text-secondary">Subtotal (Excl. Tax):</span>
                         <strong>₹{{ invoice.subtotal }}</strong>

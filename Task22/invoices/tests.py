@@ -1,3 +1,4 @@
+import base64
 from decimal import Decimal
 from datetime import timedelta
 from django.test import TestCase, Client
@@ -13,6 +14,7 @@ from accounts.models import DistributorProfile
 from invoices.models import Invoice, InvoiceItem
 from invoices.forms import InvoiceForm, InvoiceItemForm, InvoiceItemFormSet
 from invoices.serializers import InvoiceSerializer, InvoiceItemSerializer
+from invoices.utils import decode_qr_image
 
 User = get_user_model()
 
@@ -84,6 +86,14 @@ class InvoiceModelTestCase(TestCase):
         self.assertEqual(invoice.tax_amount, Decimal("360.00"))
         self.assertEqual(invoice.grand_total, Decimal("2360.00"))
         self.assertEqual(invoice.balance_due, Decimal("2360.00"))
+        self.assertTrue(invoice.qr_code.startswith("data:image/png;base64,"))
+
+        qr_bytes = base64.b64decode(invoice.qr_code.split(",", 1)[1])
+        decoded_qr = decode_qr_image(qr_bytes)
+        self.assertTrue(decoded_qr['success'], decoded_qr['error'])
+        self.assertEqual(decoded_qr['parsed_data']['raw_json']['invoice'], invoice.invoice_number)
+        self.assertEqual(decoded_qr['parsed_data']['raw_json']['items_count'], 1)
+        self.assertEqual(decoded_qr['parsed_data']['raw_json']['total'], "2360.00")
 
     def test_multiple_invoice_items_total_calculation(self):
         """Test multiple invoice items update subtotal, GST tax, and grand total correctly."""
@@ -323,6 +333,17 @@ class InvoiceFormAndAccessTestCase(TestCase):
         self.assertEqual(response['Content-Type'], 'application/pdf')
         self.assertIn(f'filename="Invoice_{invoice.invoice_number}.pdf"', response['Content-Disposition'])
         self.assertTrue(response.content.startswith(b'%PDF-'))
+
+    def test_invoice_detail_view_displays_saved_qr_code(self):
+        invoice = Invoice.objects.create(customer=self.customer1, created_by=self.admin_user)
+        InvoiceItem.objects.create(invoice=invoice, product=self.product_in_stock, quantity=1)
+        self.client.force_login(self.admin_user)
+
+        response = self.client.get(reverse('invoice_detail', kwargs={'pk': invoice.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, invoice.qr_code)
+        self.assertContains(response, 'Invoice verification QR code')
 
 
 class QRCodeDecoderTestCase(TestCase):
