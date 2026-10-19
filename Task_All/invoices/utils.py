@@ -93,6 +93,13 @@ def decode_qr_image(image_bytes):
                     decoded_text = val
                     break
 
+        # Strategy 5: Add white border (quiet zone) for finder pattern recognition
+        if not decoded_text:
+            bordered = cv2.copyMakeBorder(img, 20, 20, 20, 20, cv2.BORDER_CONSTANT, value=[255, 255, 255])
+            val, points, _ = detector.detectAndDecode(bordered)
+            if val:
+                decoded_text = val
+
         if not decoded_text:
             return {
                 'success': False,

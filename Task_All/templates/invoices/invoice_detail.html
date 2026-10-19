@@ -65,10 +65,26 @@
 {% load static %}
 <body>
     <div class="container my-4">
+        <!-- Alert Messages Container (Django Messages & Client-side Feedback) -->
+        <div id="alertContainer" class="no-print mb-3">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show bg-dark text-light border-secondary" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
         <div class="d-flex justify-content-between align-items-center no-print mb-3">
             <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary btn-sm">← Back to Invoices</a>
             <div class="d-flex gap-2">
-                <a href="{% url 'invoice_pdf' invoice.pk %}" class="btn btn-success btn-sm px-3" style="background-color: #10b981;">📥 Download PDF</a>
+                <a id="downloadPdfBtn" href="{% url 'invoice_pdf' invoice.pk %}" class="btn btn-success btn-sm px-3 d-inline-flex align-items-center gap-2" style="background-color: #10b981;" onclick="handleDownloadPDF(event, this, '{% url 'invoice_pdf' invoice.pk %}', 'Invoice_{{ invoice.invoice_number }}.pdf')">
+                    <span class="btn-icon">📥</span>
+                    <span class="btn-text">Download PDF</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </a>
                 <button onclick="window.print()" class="btn btn-outline-light btn-sm px-3">🖨️ Print</button>
             </div>
         </div>
@@ -196,5 +212,76 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- PDF Download & Alert Feedback Handler -->
+    <script>
+        async function handleDownloadPDF(event, btn, url, filename) {
+            if (event) event.preventDefault();
+
+            const icon = btn.querySelector('.btn-icon');
+            const text = btn.querySelector('.btn-text');
+            const spinner = btn.querySelector('.spinner-border');
+            const alertBox = document.getElementById('alertContainer');
+
+            function showAlert(type, message) {
+                if (!alertBox) return;
+                const alertDiv = document.createElement('div');
+                const textClass = (type === 'danger') ? 'text-danger' : (type === 'success' ? 'text-success' : 'text-light');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show bg-dark ${textClass} border border-${type} shadow-sm`;
+                alertDiv.setAttribute('role', 'alert');
+                alertDiv.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                alertBox.appendChild(alertDiv);
+                setTimeout(() => {
+                    alertDiv.classList.remove('show');
+                    setTimeout(() => alertDiv.remove(), 250);
+                }, 5000);
+            }
+
+            // Set button to loading state
+            btn.classList.add('disabled');
+            btn.style.pointerEvents = 'none';
+            if (spinner) spinner.classList.remove('d-none');
+            if (icon) icon.classList.add('d-none');
+            if (text) text.textContent = 'Generating PDF...';
+
+            try {
+                const response = await fetch(url);
+                const contentType = response.headers.get('content-type') || '';
+
+                if (response.ok && contentType.includes('application/pdf')) {
+                    const blob = await response.blob();
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = downloadUrl;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(downloadUrl);
+                    a.remove();
+
+                    showAlert('success', '✅ <strong>Success!</strong> Invoice PDF generated and downloaded successfully.');
+                } else {
+                    showAlert('danger', '❌ <strong>Download Failed:</strong> Unable to generate PDF document. Please try again.');
+                }
+            } catch (err) {
+                console.error('PDF download error:', err);
+                showAlert('danger', '❌ <strong>Error:</strong> Network error occurred while preparing the PDF. Please check your connection.');
+            } finally {
+                // Restore button state
+                btn.classList.remove('disabled');
+                btn.style.pointerEvents = '';
+                if (spinner) spinner.classList.add('d-none');
+                if (icon) icon.classList.remove('d-none');
+                if (text) text.textContent = 'Download PDF';
+            }
+        }
+    </script>
 </body>
 </html>
