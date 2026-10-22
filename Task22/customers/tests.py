@@ -100,6 +100,8 @@ class CustomerViewsTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username="adminuser", password="securepassword123")
+        self.user.is_staff = True
+        self.user.save(update_fields=['is_staff'])
         self.client.force_login(self.user)
         self.customer1 = Customer.objects.create(
             name="Alpha Corp",
@@ -204,6 +206,12 @@ class CustomerViewsTest(TestCase):
 class CustomerApiTest(TestCase):
     def setUp(self):
         self.client = Client()
+        self.admin = User.objects.create_superuser(
+            username="customer_api_admin",
+            email="customer_api_admin@example.com",
+            password="CustomerPass123!",
+        )
+        self.client.force_login(self.admin)
         self.customer = Customer.objects.create(
             name="API Client",
             email="api@client.com",
@@ -416,3 +424,48 @@ class DistributorCustomerApiTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Customer.objects.filter(pk=self.existing_customer.pk).exists())
 
+
+class DistributorCustomerScopeTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.distributor = User.objects.create_user(username="customer_distributor", password="pass")
+        self.other_distributor = User.objects.create_user(username="other_customer_distributor", password="pass")
+        self.own_customer = Customer.objects.create(
+            name="Own customer",
+            email="own@example.com",
+            phone="1234567890",
+            address="Own road",
+            distributor=self.distributor,
+        )
+        self.other_customer = Customer.objects.create(
+            name="Other customer",
+            email="other@example.com",
+            phone="1234567891",
+            address="Other road",
+            distributor=self.other_distributor,
+        )
+        self.client.force_login(self.distributor)
+
+    def test_distributor_only_sees_and_can_access_own_customers(self):
+        response = self.client.get(reverse('customer_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.own_customer.name)
+        self.assertNotContains(response, self.other_customer.name)
+
+        response = self.client.get(reverse('customer_detail', kwargs={'pk': self.other_customer.pk}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_distributor_created_customers_are_assigned_to_them(self):
+        response = self.client.post(reverse('customer_create'), {
+            'name': 'Distributor-made customer',
+            'email': 'new@example.com',
+            'phone': '1234567892',
+            'address': 'New road',
+            'country': 'India',
+            'credit_limit': '10000.00',
+            'outstanding_balance': '0.00',
+            'is_active': True,
+        })
+        self.assertEqual(response.status_code, 302)
+        customer = Customer.objects.get(email='new@example.com')
+        self.assertEqual(customer.distributor, self.distributor)

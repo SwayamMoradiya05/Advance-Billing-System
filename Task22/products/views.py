@@ -2,21 +2,30 @@ import json
 from decimal import Decimal
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Q
+from django.db.models import F, Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Product
 from .forms import ProductForm, ProductSearchFilterForm
 from .serializers import ProductSerializer
 
 
+def _products_for_user(user):
+    products = Product.objects.all()
+    if not (user.is_staff or user.is_superuser):
+        products = products.filter(distributor=user)
+    return products
+
+
+@login_required
 def product_list_view(request):
     """
     Display searchable, filterable catalog of Products with metrics and pagination.
     """
     filter_form = ProductSearchFilterForm(request.GET)
-    products_qs = Product.objects.all()
+    products_qs = _products_for_user(request.user)
 
     query = ''
     category = ''
@@ -44,29 +53,19 @@ def product_list_view(request):
     if stock_status == 'in_stock':
         products_qs = products_qs.filter(stock__gt=0)
     elif stock_status == 'low_stock':
-        # Filter products where stock > 0 and stock <= min_stock_level
-        products_qs = [p for p in products_qs if p.is_low_stock and p.stock > 0]
-        p_ids = [p.id for p in products_qs]
-        products_qs = Product.objects.filter(id__in=p_ids)
+        products_qs = products_qs.filter(stock__gt=0, stock__lte=F('min_stock_level'))
     elif stock_status == 'out_of_stock':
         products_qs = products_qs.filter(stock__lte=0)
 
     # Sorting
     valid_sorts = ['-created_at', 'name', '-name', 'price', '-price', 'stock', '-stock']
-    if isinstance(products_qs, list):
-        # Already evaluated list from custom property filter
-        if sort_by in valid_sorts:
-            reverse = sort_by.startswith('-')
-            attr = sort_by.lstrip('-')
-            products_qs.sort(key=lambda p: getattr(p, attr, 0), reverse=reverse)
+    if sort_by in valid_sorts:
+        products_qs = products_qs.order_by(sort_by)
     else:
-        if sort_by in valid_sorts:
-            products_qs = products_qs.order_by(sort_by)
-        else:
-            products_qs = products_qs.order_by('-created_at')
+        products_qs = products_qs.order_by('-created_at')
 
     # Overall system metrics
-    all_products = Product.objects.all()
+    all_products = _products_for_user(request.user)
     total_count = all_products.count()
     active_count = all_products.filter(is_active=True).count()
     low_stock_count = sum(1 for p in all_products if p.is_low_stock)
@@ -111,17 +110,19 @@ def product_list_view(request):
     return render(request, 'products/product_list.html', context)
 
 
+@login_required
 def product_detail_view(request, pk):
     """
     Display detailed specification, pricing, GST calculation, and stock breakdown for a product.
     """
-    product = get_object_or_404(Product, pk=pk)
+    product = get_object_or_404(_products_for_user(request.user), pk=pk)
     context = {
         'product': product,
     }
     return render(request, 'products/product_detail.html', context)
 
 
+@login_required
 def product_create_view(request):
     """
     View for creating a new Product record.
@@ -129,7 +130,10 @@ def product_create_view(request):
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
-            product = form.save()
+            product = form.save(commit=False)
+            if not (request.user.is_staff or request.user.is_superuser):
+                product.distributor = request.user
+            product.save()
             messages.success(
                 request,
                 f"Product '{product.name}' created successfully with SKU {product.sku}!"
@@ -147,11 +151,12 @@ def product_create_view(request):
     })
 
 
+@login_required
 def product_update_view(request, pk):
     """
     View for editing an existing Product record.
     """
-    product = get_object_or_404(Product, pk=pk)
+    product = get_object_or_404(_products_for_user(request.user), pk=pk)
 
     if request.method == 'POST':
         form = ProductForm(request.POST, instance=product)
@@ -172,11 +177,12 @@ def product_update_view(request, pk):
     })
 
 
+@login_required
 def product_delete_view(request, pk):
     """
     View for confirming and deleting a Product record.
     """
-    product = get_object_or_404(Product, pk=pk)
+    product = get_object_or_404(_products_for_user(request.user), pk=pk)
 
     if request.method == 'POST':
         name = product.name
@@ -190,11 +196,12 @@ def product_delete_view(request, pk):
     })
 
 
+@login_required
 def product_toggle_status_view(request, pk):
     """
     Toggle active/inactive status of a product.
     """
-    product = get_object_or_404(Product, pk=pk)
+    product = get_object_or_404(_products_for_user(request.user), pk=pk)
     product.is_active = not product.is_active
     product.save(update_fields=['is_active'])
     status_str = "activated" if product.is_active else "deactivated"
@@ -207,6 +214,7 @@ def product_toggle_status_view(request, pk):
 # =============================================================================
 
 @csrf_exempt
+@login_required
 def api_product_list_create(request):
     """
     REST API Endpoint:
@@ -214,7 +222,7 @@ def api_product_list_create(request):
     POST /products/api/products/ -> Create a product via JSON payload
     """
     if request.method == 'GET':
-        products = Product.objects.all()
+        products = _products_for_user(request.user)
         query = request.GET.get('q')
         category = request.GET.get('category')
         stock_status = request.GET.get('stock_status')
@@ -260,6 +268,8 @@ def api_product_list_create(request):
             description=body.get('description', '').strip(),
             is_active=bool(body.get('is_active', True)),
         )
+        if not (request.user.is_staff or request.user.is_superuser):
+            product.distributor = request.user
 
         sku = body.get('sku', '').strip()
         if sku:
@@ -277,6 +287,7 @@ def api_product_list_create(request):
 
 
 @csrf_exempt
+@login_required
 def api_product_detail(request, pk):
     """
     REST API Endpoint:
@@ -285,7 +296,7 @@ def api_product_detail(request, pk):
     DELETE /products/api/products/<pk>/ -> Delete product
     """
     try:
-        product = Product.objects.get(pk=pk)
+        product = _products_for_user(request.user).get(pk=pk)
     except Product.DoesNotExist:
         return JsonResponse({'status': 'error', 'error': f'Product with ID {pk} not found.'}, status=404)
 

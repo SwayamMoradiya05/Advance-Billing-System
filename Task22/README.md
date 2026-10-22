@@ -10,6 +10,7 @@ Enterprise wholesale billing, distributor management, and customer directory web
    - Admin Governance Suite with system metrics, QR invoice generator, and credit ledger.
    - Distributor Logistics Portal with stock intake tracker and credit line utilization.
    - Secure Login, Registration, and Password Reset workflows.
+   - Distributor profiles are manageable from Django Admin; customer, product, and invoice records are scoped to their owning distributor.
 
 2. **Customer Directory & Account Management**:
    - Customer table with search bar, multi-field search (Name, Email, Phone, Code, City, Tax ID).
@@ -42,6 +43,8 @@ python manage.py createsuperuser
 # Run local development server
 python manage.py runserver
 ```
+
+Create distributor user accounts first, then add their `DistributorProfile` records in Django Admin. Assign existing products to a distributor in the product admin when those products should appear in that distributor's catalog. New products and customers created by distributors are assigned to them automatically; invoices inherit their scope through the associated customer.
 
 ### 3. Running Unit Tests
 ```bash

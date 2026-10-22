@@ -214,8 +214,8 @@ class InvoiceFormAndAccessTestCase(TestCase):
         self.customer2 = Customer.objects.create(name="Customer Two", email="c2@test.com", phone="2222222222", address="Addr 2")
 
         # Sample Products
-        self.product_in_stock = Product.objects.create(name="Laptop Pro", price=Decimal("50000.00"), stock=10, gst_rate=Decimal("18.00"))
-        self.product_low_stock = Product.objects.create(name="Mouse Wireless", price=Decimal("800.00"), stock=2, gst_rate=Decimal("18.00"))
+        self.product_in_stock = Product.objects.create(name="Laptop Pro", price=Decimal("50000.00"), stock=10, gst_rate=Decimal("18.00"), distributor=self.distributor_user)
+        self.product_low_stock = Product.objects.create(name="Mouse Wireless", price=Decimal("800.00"), stock=2, gst_rate=Decimal("18.00"), distributor=self.distributor_user)
 
     def test_invoice_creation_access_control(self):
         """Test invoice creation view permissions: Allowed for Admin and Distributor, Denied for Customer."""
@@ -345,6 +345,25 @@ class InvoiceFormAndAccessTestCase(TestCase):
         self.assertContains(response, invoice.qr_code)
         self.assertContains(response, 'Invoice verification QR code')
 
+    def test_distributor_invoice_lists_and_details_are_scoped_to_owned_customers(self):
+        own_invoice = Invoice.objects.create(customer=self.customer1, created_by=self.distributor_user)
+        other_customer = Customer.objects.create(
+            name="Unrelated customer",
+            email="unrelated@example.com",
+            phone="3333333333",
+            address="Other address",
+        )
+        other_invoice = Invoice.objects.create(customer=other_customer, created_by=self.admin_user)
+
+        self.client.force_login(self.distributor_user)
+        response = self.client.get(reverse('invoice_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, own_invoice.invoice_number)
+        self.assertNotContains(response, other_invoice.invoice_number)
+
+        response = self.client.get(reverse('invoice_detail', kwargs={'pk': other_invoice.pk}))
+        self.assertEqual(response.status_code, 404)
+
 
 class QRCodeDecoderTestCase(TestCase):
     """
@@ -384,6 +403,7 @@ class QRCodeDecoderTestCase(TestCase):
 
     def test_qr_decode_api_with_valid_invoice_file(self):
         """Test POST /invoices/api/qr/decode/ with an uploaded image file matches invoice in DB."""
+        self.client.force_login(self.user)
         payload = {
             'invoice': self.invoice.invoice_number,
             'customer': self.customer.name,
@@ -408,6 +428,7 @@ class QRCodeDecoderTestCase(TestCase):
 
     def test_qr_decode_api_with_base64_json_payload(self):
         """Test POST /invoices/api/qr/decode/ with Base64 JSON payload."""
+        self.client.force_login(self.user)
         import base64
         import json
         import qrcode
@@ -432,6 +453,7 @@ class QRCodeDecoderTestCase(TestCase):
 
     def test_qr_decode_api_no_qr_in_image(self):
         """Test POST /invoices/api/qr/decode/ with blank image returns 400."""
+        self.client.force_login(self.user)
         from io import BytesIO
         from PIL import Image
         from django.core.files.uploadedfile import SimpleUploadedFile
@@ -452,6 +474,7 @@ class QRCodeDecoderTestCase(TestCase):
 
     def test_qr_decode_api_empty_request(self):
         """Test POST /invoices/api/qr/decode/ with no payload returns 400."""
+        self.client.force_login(self.user)
         url = reverse('api_qr_decode')
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, 400)

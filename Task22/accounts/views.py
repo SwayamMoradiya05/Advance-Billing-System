@@ -1375,13 +1375,15 @@ def dashboard_view(request):
 
 
     return render(
-
         request,
-
         'accounts/dashboard.html',
-
-        {'user': request.user}
-
+        {
+            'user': request.user,
+            'total_customers': Customer.objects.count(),
+            'total_products': Product.objects.count(),
+            'total_invoices': Invoice.objects.count(),
+            'total_distributors': DistributorProfile.objects.count(),
+        }
     )
 
 

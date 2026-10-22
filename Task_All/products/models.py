@@ -3,6 +3,9 @@ import time
 from decimal import Decimal
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class Product(models.Model):
@@ -92,6 +95,14 @@ class Product(models.Model):
         blank=True,
         default="",
         help_text="Detailed product specifications, feature notes, or comments."
+    )
+    distributor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="managed_products",
+        help_text="Distributor account that owns this product."
     )
     is_active = models.BooleanField(
         default=True,

@@ -4,9 +4,13 @@ from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
+from django.contrib import admin
 from .forms import LoginForm
 from .serializers import LoginSerializer, OTPRequestSerializer, OTPVerifySerializer
 from .models import OTPCode, DistributorProfile
+from customers.models import Customer
+from products.models import Product
+from invoices.models import Invoice
 
 User = get_user_model()
 
@@ -459,3 +463,40 @@ class AdminRegistrationApiTests(TestCase):
         self.assertIn('password', data['details'])
 
 
+class AdminDashboardMetricsTest(TestCase):
+    def test_dashboard_shows_live_database_counts_and_distributors_are_admin_managed(self):
+        admin_user = User.objects.create_superuser(
+            username="metrics_admin",
+            email="metrics_admin@example.com",
+            password="MetricsPass123!",
+        )
+        distributor = User.objects.create_user(
+            username="metrics_distributor",
+            email="metrics_distributor@example.com",
+            password="MetricsPass123!",
+        )
+        DistributorProfile.objects.create(
+            user=distributor,
+            phone="1234567890",
+            distributor_id="DIST-METRIC",
+        )
+        customer = Customer.objects.create(
+            name="Metrics customer",
+            email="metrics_customer@example.com",
+            phone="1234567891",
+            address="Metrics road",
+            distributor=distributor,
+        )
+        Product.objects.create(name="Metrics product")
+        Invoice.objects.create(customer=customer, created_by=admin_user)
+
+        client = Client()
+        client.force_login(admin_user)
+        response = client.get(reverse('dashboard'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['total_customers'], 1)
+        self.assertEqual(response.context['total_products'], 1)
+        self.assertEqual(response.context['total_invoices'], 1)
+        self.assertEqual(response.context['total_distributors'], 1)
+        self.assertIn(DistributorProfile, admin.site._registry)

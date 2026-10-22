@@ -14,13 +14,20 @@ from .serializers import CustomerSerializer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
+def _customers_for_user(user):
+    customers = Customer.objects.all()
+    if not (user.is_staff or user.is_superuser):
+        customers = customers.filter(distributor=user)
+    return customers
+
+
 @login_required
 def customer_list_view(request):
     """
     Display a searchable, filterable, sortable directory of customers with pagination.
     """
     filter_form = CustomerFilterForm(request.GET)
-    customers_qs = Customer.objects.all()
+    customers_qs = _customers_for_user(request.user)
 
     query = ''
     status = ''
@@ -55,10 +62,11 @@ def customer_list_view(request):
         customers_qs = customers_qs.order_by('-created_at')
 
     # Overall system metrics
-    total_count = Customer.objects.count()
-    active_count = Customer.objects.filter(is_active=True).count()
-    inactive_count = Customer.objects.filter(is_active=False).count()
-    total_outstanding = sum(c.outstanding_balance for c in Customer.objects.filter(is_active=True))
+    owned_customers = _customers_for_user(request.user)
+    total_count = owned_customers.count()
+    active_count = owned_customers.filter(is_active=True).count()
+    inactive_count = owned_customers.filter(is_active=False).count()
+    total_outstanding = sum(c.outstanding_balance for c in owned_customers.filter(is_active=True))
 
     filtered_count = customers_qs.count()
 
@@ -100,7 +108,7 @@ def customer_detail_view(request, pk):
     """
     Display detailed profile, contact info, and financial metrics of a customer.
     """
-    customer = get_object_or_404(Customer, pk=pk)
+    customer = get_object_or_404(_customers_for_user(request.user), pk=pk)
     context = {
         'customer': customer,
     }
@@ -116,7 +124,7 @@ def customer_create_view(request):
         form = CustomerForm(request.POST)
         if form.is_valid():
             customer = form.save(commit=False)
-            if hasattr(request.user, 'distributor_profile'):
+            if not (request.user.is_staff or request.user.is_superuser):
                 customer.distributor = request.user
             customer.save()
             messages.success(request, f"Customer '{customer.name}' created successfully with Code {customer.customer_code}!")
@@ -138,7 +146,7 @@ def customer_update_view(request, pk):
     """
     View for updating an existing Customer record.
     """
-    customer = get_object_or_404(Customer, pk=pk)
+    customer = get_object_or_404(_customers_for_user(request.user), pk=pk)
 
     if request.method == 'POST':
         form = CustomerForm(request.POST, instance=customer)
@@ -164,7 +172,7 @@ def customer_delete_view(request, pk):
     """
     View for confirming and deleting a customer.
     """
-    customer = get_object_or_404(Customer, pk=pk)
+    customer = get_object_or_404(_customers_for_user(request.user), pk=pk)
 
     if request.method == 'POST':
         name = customer.name
@@ -182,7 +190,7 @@ def customer_toggle_status_view(request, pk):
     """
     Quick view to toggle a customer's active/inactive status.
     """
-    customer = get_object_or_404(Customer, pk=pk)
+    customer = get_object_or_404(_customers_for_user(request.user), pk=pk)
     customer.is_active = not customer.is_active
     customer.save(update_fields=['is_active'])
     status_str = "activated" if customer.is_active else "deactivated"
@@ -195,6 +203,7 @@ def customer_toggle_status_view(request, pk):
 # =============================================================================
 
 @csrf_exempt
+@login_required
 def api_customer_list_create(request):
     """
     API Endpoint:
@@ -202,7 +211,7 @@ def api_customer_list_create(request):
     POST /api/customers/ -> Creates a new customer
     """
     if request.method == 'GET':
-        customers = Customer.objects.all()
+        customers = _customers_for_user(request.user)
         query = request.GET.get('q')
         if query:
             customers = customers.filter(
@@ -241,6 +250,8 @@ def api_customer_list_create(request):
             is_active=bool(body.get('is_active', True)),
             notes=body.get('notes', '').strip(),
         )
+        if not (request.user.is_staff or request.user.is_superuser):
+            customer.distributor = request.user
         customer.save()
 
         return JsonResponse({
@@ -253,6 +264,7 @@ def api_customer_list_create(request):
 
 
 @csrf_exempt
+@login_required
 def api_customer_detail(request, pk):
     """
     API Endpoint:
@@ -261,7 +273,7 @@ def api_customer_detail(request, pk):
     DELETE /api/customers/<pk>/ -> Delete customer record
     """
     try:
-        customer = Customer.objects.get(pk=pk)
+        customer = _customers_for_user(request.user).get(pk=pk)
     except Customer.DoesNotExist:
         return JsonResponse({'status': 'error', 'error': f'Customer with ID {pk} not found.'}, status=404)
 

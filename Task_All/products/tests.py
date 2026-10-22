@@ -3,9 +3,12 @@ from decimal import Decimal
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 from .models import Product
 from .forms import ProductForm, ProductSearchFilterForm
 from .serializers import ProductSerializer
+
+User = get_user_model()
 
 
 class ProductModelTestCase(TestCase):
@@ -125,6 +128,12 @@ class ProductViewTestCase(TestCase):
 
     def setUp(self):
         self.client = Client()
+        self.admin = User.objects.create_superuser(
+            username="product_admin",
+            email="product_admin@example.com",
+            password="ProductPass123!",
+        )
+        self.client.force_login(self.admin)
         self.product = Product.objects.create(
             name="Mechanical Keyboard",
             category="Electronics",
@@ -200,6 +209,12 @@ class ProductApiTestCase(TestCase):
 
     def setUp(self):
         self.client = Client()
+        self.admin = User.objects.create_superuser(
+            username="product_api_admin",
+            email="product_api_admin@example.com",
+            password="ProductPass123!",
+        )
+        self.client.force_login(self.admin)
         self.product = Product.objects.create(
             name="Ergonomic Desk Chair",
             category="Office Supplies",
@@ -267,3 +282,37 @@ class ProductApiTestCase(TestCase):
         response = self.client.delete(reverse('api_product_detail', kwargs={'pk': self.product.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Product.objects.filter(pk=self.product.pk).exists())
+
+
+class DistributorProductScopeTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.distributor = User.objects.create_user(username="product_distributor", password="pass")
+        self.other_distributor = User.objects.create_user(username="other_product_distributor", password="pass")
+        self.own_product = Product.objects.create(name="Own product", distributor=self.distributor)
+        self.other_product = Product.objects.create(name="Other product", distributor=self.other_distributor)
+        self.client.force_login(self.distributor)
+
+    def test_distributor_only_sees_and_can_access_own_products(self):
+        response = self.client.get(reverse('product_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.own_product.name)
+        self.assertNotContains(response, self.other_product.name)
+
+        response = self.client.get(reverse('product_detail', kwargs={'pk': self.other_product.pk}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_distributor_created_products_are_assigned_to_them(self):
+        response = self.client.post(reverse('product_create'), {
+            'name': 'Distributor-made product',
+            'category': 'General',
+            'price': '10.00',
+            'stock': '5',
+            'gst_rate': '18.00',
+            'unit': 'pcs',
+            'min_stock_level': '1',
+            'is_active': True,
+        })
+        self.assertEqual(response.status_code, 302)
+        product = Product.objects.get(name='Distributor-made product')
+        self.assertEqual(product.distributor, self.distributor)

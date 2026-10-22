@@ -121,13 +121,8 @@ class InvoiceForm(forms.ModelForm):
 
         # Dynamic role-based customer filtering
         active_customers = Customer.objects.filter(is_active=True).order_by('name')
-        if user and not (user.is_staff or user.is_superuser) and hasattr(user, 'distributor_profile'):
-            # If logged in user is a distributor, prioritize customers managed by this distributor
-            distributor_customers = active_customers.filter(distributor=user)
-            if distributor_customers.exists():
-                self.fields['customer'].queryset = distributor_customers
-            else:
-                self.fields['customer'].queryset = active_customers
+        if user and not (user.is_staff or user.is_superuser):
+            self.fields['customer'].queryset = active_customers.filter(distributor=user)
         else:
             self.fields['customer'].queryset = active_customers
 
@@ -179,6 +174,14 @@ class InvoiceItemForm(forms.ModelForm):
             'discount_percentage': forms.NumberInput(attrs={'class': 'form-control discount-input', 'step': '0.01', 'min': '0', 'max': '100', 'placeholder': '0.00'}),
             'description': forms.TextInput(attrs={'class': 'form-control line-desc-input', 'placeholder': 'Line item specifics or serial nos'}),
         }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user and not (user.is_staff or user.is_superuser):
+            self.fields['product'].queryset = Product.objects.filter(
+                is_active=True,
+                distributor=user,
+            ).order_by('name')
 
     def clean(self):
         cleaned_data = super().clean()

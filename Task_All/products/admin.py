@@ -11,6 +11,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = [
         'sku',
         'name',
+        'distributor',
         'category',
         'price_display',
         'gst_rate_display',
@@ -23,6 +24,7 @@ class ProductAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         'category',
+        'distributor',
         'gst_rate',
         'is_active',
         'unit',
@@ -51,7 +53,7 @@ class ProductAdmin(admin.ModelAdmin):
     ]
     fieldsets = (
         ('Basic Information', {
-            'fields': ('sku', 'name', 'category', 'description', 'is_active')
+            'fields': ('sku', 'name', 'distributor', 'category', 'description', 'is_active')
         }),
         ('Pricing & Tax Details', {
             'fields': (

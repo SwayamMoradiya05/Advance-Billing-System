@@ -22,6 +22,13 @@ from customers.models import Customer
 from products.models import Product
 
 
+def _invoices_for_user(user):
+    invoices = Invoice.objects.all()
+    if not (user.is_staff or user.is_superuser):
+        invoices = invoices.filter(customer__distributor=user)
+    return invoices
+
+
 def is_admin_or_distributor(user):
     """
     Check if the authenticated user has permission to create and manage invoices.
@@ -58,7 +65,7 @@ def invoice_list_view(request):
     """
     Display a searchable, filterable invoice listing with pagination and aggregate metrics.
     """
-    invoices_qs = Invoice.objects.select_related('customer', 'created_by').all()
+    invoices_qs = _invoices_for_user(request.user).select_related('customer', 'created_by')
 
     query = request.GET.get('q', '').strip()
     status_filter = request.GET.get('status', '').strip()
@@ -82,10 +89,11 @@ def invoice_list_view(request):
         invoices_qs = invoices_qs.order_by('-created_at')
 
     # Aggregates
-    total_count = Invoice.objects.count()
-    paid_count = Invoice.objects.filter(status='PAID').count()
-    pending_count = Invoice.objects.filter(status='PENDING').count()
-    total_revenue = Invoice.objects.filter(status='PAID').aggregate(total=Sum('grand_total'))['total'] or Decimal('0.00')
+    owned_invoices = _invoices_for_user(request.user)
+    total_count = owned_invoices.count()
+    paid_count = owned_invoices.filter(status='PAID').count()
+    pending_count = owned_invoices.filter(status='PENDING').count()
+    total_revenue = owned_invoices.filter(status='PAID').aggregate(total=Sum('grand_total'))['total'] or Decimal('0.00')
 
     paginator = Paginator(invoices_qs, 10)
     page = request.GET.get('page', 1)
@@ -116,7 +124,7 @@ def invoice_detail_view(request, pk):
     """
     Display complete details of a specific Invoice including line items.
     """
-    invoice = get_object_or_404(Invoice.objects.select_related('customer', 'created_by').prefetch_related('items__product'), pk=pk)
+    invoice = get_object_or_404(_invoices_for_user(request.user).select_related('customer', 'created_by').prefetch_related('items__product'), pk=pk)
     if not invoice.qr_code:
         invoice.refresh_qr_code()
     context = {
@@ -131,7 +139,7 @@ def invoice_pdf_view(request, pk):
     """
     Generate and stream downloadable PDF document for a specific Invoice with logo and company branding.
     """
-    invoice = get_object_or_404(Invoice.objects.select_related('customer', 'created_by').prefetch_related('items__product'), pk=pk)
+    invoice = get_object_or_404(_invoices_for_user(request.user).select_related('customer', 'created_by').prefetch_related('items__product'), pk=pk)
 
     # Encode logo image into Base64 string for standalone PDF embedding
     logo_base64 = None
@@ -188,7 +196,7 @@ def invoice_create_view(request):
     """
     if request.method == 'POST':
         form = InvoiceForm(request.POST, user=request.user)
-        formset = InvoiceItemFormSet(request.POST)
+        formset = InvoiceItemFormSet(request.POST, form_kwargs={'user': request.user})
 
         if form.is_valid() and formset.is_valid():
             invoice = form.save(commit=False)
@@ -207,7 +215,7 @@ def invoice_create_view(request):
             messages.error(request, "Please resolve the form validation errors highlighted below.")
     else:
         form = InvoiceForm(user=request.user)
-        formset = InvoiceItemFormSet()
+        formset = InvoiceItemFormSet(form_kwargs={'user': request.user})
 
     is_admin = request.user.is_staff or request.user.is_superuser
     is_distributor = hasattr(request.user, 'distributor_profile')
@@ -234,7 +242,10 @@ def api_customer_detail(request, pk):
     Dynamic JSON lookup for a specific Customer by Primary Key.
     Used by front-end JS to render real-time customer cards and credit limits.
     """
-    customer = get_object_or_404(Customer, pk=pk)
+    customers = Customer.objects.all()
+    if not (request.user.is_staff or request.user.is_superuser):
+        customers = customers.filter(distributor=request.user)
+    customer = get_object_or_404(customers, pk=pk)
     return JsonResponse({
         'success': True,
         'customer': {
@@ -264,7 +275,10 @@ def api_product_detail(request, pk):
     Dynamic JSON lookup for a specific Product by Primary Key.
     Used by front-end JS when selecting a product from line item dropdowns.
     """
-    product = get_object_or_404(Product, pk=pk)
+    products = Product.objects.all()
+    if not (request.user.is_staff or request.user.is_superuser):
+        products = products.filter(distributor=request.user)
+    product = get_object_or_404(products, pk=pk)
     return JsonResponse({
         'success': True,
         'product': {
@@ -284,13 +298,14 @@ def api_product_detail(request, pk):
     })
 
 
+@login_required
 def api_invoice_list(request):
     """
     JSON REST API endpoint for retrieving and creating invoices.
     Invoice creation via API is restricted to Admins and Distributors.
     """
     if request.method == 'GET':
-        invoices = Invoice.objects.select_related('customer', 'created_by').prefetch_related('items__product').all()
+        invoices = _invoices_for_user(request.user).select_related('customer', 'created_by').prefetch_related('items__product')
         
         customer_id = request.GET.get('customer')
         if customer_id:
@@ -319,7 +334,10 @@ def api_invoice_list(request):
         if errors:
             return JsonResponse({'success': False, 'errors': errors}, status=400)
 
-        customer = get_object_or_404(Customer, pk=payload.get('customer_id') or payload.get('customer'))
+        customers = Customer.objects.all()
+        if not (request.user.is_staff or request.user.is_superuser):
+            customers = customers.filter(distributor=request.user)
+        customer = get_object_or_404(customers, pk=payload.get('customer_id') or payload.get('customer'))
         
         invoice = Invoice(
             customer=customer,
@@ -339,8 +357,11 @@ def api_invoice_list(request):
         items_payload = payload.get('items', [])
         for item_data in items_payload:
             product_id = item_data.get('product_id') or item_data.get('product')
-            if product_id and Product.objects.filter(pk=product_id).exists():
-                prod = Product.objects.get(pk=product_id)
+            products = Product.objects.all()
+            if not (request.user.is_staff or request.user.is_superuser):
+                products = products.filter(distributor=request.user)
+            if product_id and products.filter(pk=product_id).exists():
+                prod = products.get(pk=product_id)
                 item = InvoiceItem(
                     invoice=invoice,
                     product=prod,
@@ -358,11 +379,12 @@ def api_invoice_list(request):
     return HttpResponseNotAllowed(['GET', 'POST'])
 
 
+@login_required
 def api_invoice_detail(request, pk):
     """
     JSON REST API endpoint for retrieving a single invoice.
     """
-    invoice = get_object_or_404(Invoice.objects.select_related('customer', 'created_by').prefetch_related('items__product'), pk=pk)
+    invoice = get_object_or_404(_invoices_for_user(request.user).select_related('customer', 'created_by').prefetch_related('items__product'), pk=pk)
     if request.method == 'GET':
         return JsonResponse({'success': True, 'invoice': InvoiceSerializer.serialize(invoice)})
     return HttpResponseNotAllowed(['GET'])
@@ -380,6 +402,7 @@ def qr_scanner_view(request):
 
 
 @csrf_exempt
+@login_required
 def api_qr_decode_view(request):
     """
     REST API endpoint for decoding uploaded QR code images using OpenCV.
@@ -463,7 +486,7 @@ def api_qr_decode_view(request):
     is_authentic = False
 
     if invoice_num:
-        inv = Invoice.objects.filter(invoice_number__iexact=invoice_num).select_related('customer', 'created_by').prefetch_related('items__product').first()
+        inv = _invoices_for_user(request.user).filter(invoice_number__iexact=invoice_num).select_related('customer', 'created_by').prefetch_related('items__product').first()
         if inv:
             matched_invoice = InvoiceSerializer.serialize(inv)
             detail_url = reverse('invoice_detail', args=[inv.pk])

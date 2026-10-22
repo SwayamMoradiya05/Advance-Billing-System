@@ -951,42 +951,42 @@
             </div>
         </div>
 
-        <!-- 4 Top Metric Cards (Values converted to INR ₹) -->
+        <!-- Live database metrics -->
         <div class="metrics-grid">
             <div class="metric-card">
                 <div>
-                    <div class="metric-label">TOTAL MONTHLY REVENUE</div>
-                    <div class="metric-value highlight-green">₹1,842,500</div>
-                    <div class="metric-sub green">↑ +14.2% vs last month</div>
+                    <div class="metric-label">TOTAL CUSTOMERS</div>
+                    <div class="metric-value highlight-green">{{ total_customers }}</div>
+                    <div class="metric-sub">Customer accounts in the database</div>
                 </div>
-                <div class="metric-icon">💰</div>
+                <div class="metric-icon">👥</div>
             </div>
 
             <div class="metric-card">
                 <div>
-                    <div class="metric-label">ACTIVE DISTRIBUTORS</div>
-                    <div class="metric-value">24 Partners</div>
-                    <div class="metric-sub">4 pending approvals</div>
+                    <div class="metric-label">TOTAL PRODUCTS</div>
+                    <div class="metric-value">{{ total_products }}</div>
+                    <div class="metric-sub">Products in the catalog</div>
+                </div>
+                <div class="metric-icon">📦</div>
+            </div>
+
+            <div class="metric-card">
+                <div>
+                    <div class="metric-label">TOTAL INVOICES</div>
+                    <div class="metric-value">{{ total_invoices }}</div>
+                    <div class="metric-sub">Invoices recorded in the database</div>
+                </div>
+                <div class="metric-icon">🧾</div>
+            </div>
+
+            <div class="metric-card">
+                <div>
+                    <div class="metric-label">TOTAL DISTRIBUTORS</div>
+                    <div class="metric-value">{{ total_distributors }}</div>
+                    <div class="metric-sub">Registered distributor accounts</div>
                 </div>
                 <div class="metric-icon">🚚</div>
-            </div>
-
-            <div class="metric-card">
-                <div>
-                    <div class="metric-label">QR INVOICES ISSUED</div>
-                    <div class="metric-value">318 Bills</div>
-                    <div class="metric-sub green">100% Verified via QR</div>
-                </div>
-                <div class="metric-icon">📲</div>
-            </div>
-
-            <div class="metric-card">
-                <div>
-                    <div class="metric-label">CREDIT ALLOCATED</div>
-                    <div class="metric-value">₹680,000</div>
-                    <div class="metric-sub">74% Total Limit Used</div>
-                </div>
-                <div class="metric-icon">💳</div>
             </div>
         </div>
 
